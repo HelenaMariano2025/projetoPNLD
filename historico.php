@@ -1,3 +1,28 @@
+<?php
+require 'php/conexao.php';
+
+$query = "
+    SELECT 
+        emprestimo.codigo_emprestimo,
+        livro.titulo AS livro,
+        aluno.nome AS aluno,
+        aluno.matricula,
+        emprestimo.dataEmprestimo,
+        emprestimo.dataDevolucao,
+        devolucao.dataDevolucao AS data_devolucao_real
+    FROM emprestimo
+    INNER JOIN livro 
+        ON emprestimo.codigo_livro = livro.codigo
+    INNER JOIN aluno 
+        ON emprestimo.matricula_aluno = aluno.matricula
+    LEFT JOIN devolucao 
+        ON emprestimo.codigo_emprestimo = devolucao.codigo_emprestimo
+    ORDER BY emprestimo.codigo_emprestimo DESC
+";
+
+$resultado = $conn->query($query);
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -92,11 +117,156 @@
           </nav>
         </div>
       </div>
-    </header>
+    </header> 
+      <section class="historico_section">
 
-    <section class="pdf">
-      <button onclick="window.location.href='pdf_historico.php'">PDF do Histórico de Emprestimos</button>
-    </section>
-    
+          <div class="container">
+
+              <div class="heading_container">
+
+                  <h2>
+                      Relatório de Empréstimos
+                  </h2>
+
+                  <p>
+                      Consulte o histórico de empréstimos realizados no sistema.
+                  </p>
+
+              </div>
+
+
+              <div class="table-responsive">
+
+                  <table class="table">
+
+                      <thead>
+
+                          <tr>
+                              <th>Código</th>
+                              <th>Livro</th>
+                              <th>Aluno</th>
+                              <th>Matrícula</th>
+                              <th>Data do empréstimo</th>
+                              <th>Data prevista</th>
+                              <th>Data da devolução</th>
+                              <th>Status</th>
+                          </tr>
+
+                      </thead>
+
+                      <tbody> 
+                        <?php
+
+                        if ($resultado && $resultado->num_rows > 0) {
+
+                            while ($row = $resultado->fetch_assoc()) {
+
+                                $dataEmprestimo = date(
+                                    "d/m/Y",
+                                    strtotime($row['dataEmprestimo'])
+                                );
+
+                                $dataPrevista = date(
+                                    "d/m/Y",
+                                    strtotime($row['dataDevolucao'])
+                                );
+
+
+                                if (!empty($row['data_devolucao_real'])) {
+
+                                    $dataDevolucao = date(
+                                        "d/m/Y",
+                                        strtotime($row['data_devolucao_real'])
+                                    );
+
+                                    $status = "Devolvido";
+
+                                } else {
+
+                                    $dataDevolucao = "-";
+
+                                    if (strtotime($row['dataDevolucao']) < time()) {
+
+                                        $status = "Atrasado";
+
+                                    } else {
+
+                                        $status = "Em andamento";
+
+                                    }
+
+                                }
+
+                                ?>
+
+                                <tr>
+
+                                    <td>
+                                        <?php
+                                        echo $row['codigo_emprestimo'];
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo htmlspecialchars($row['livro']);
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo htmlspecialchars($row['aluno']);
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo $row['matricula'];
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo $dataEmprestimo;
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo $dataPrevista;
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo $dataDevolucao;
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo $status;
+                                        ?>
+                                    </td>
+
+                                </tr>
+
+                                <?php
+                            }
+                        } else {  
+                            ?>
+                            <tr>
+                                <td colspan="8">Nenhum registro encontrado.</td>
+                            </tr>
+                            <?php
+                        } 
+                         ?>
+                      </tbody>
+                      </table>
+              </div>
+            </div>
+      </section>
+  </div>
+
 </body>
 </html>
