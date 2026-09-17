@@ -1,29 +1,29 @@
 <?php
 session_start();
-include 'php/conexao.php'; 
+include 'php/conexao.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $matricula = $_POST["matricula"];
     $senha = $_POST["senha"];
-    
+
     $sql = "SELECT * FROM administrador WHERE matricula = '$matricula'";
     $resultado = $conn->query($sql);
-  
+
     if ($resultado->num_rows == 1) {
         $row = $resultado->fetch_assoc();
+
         if ($senha === $row["senha"]) {
             $_SESSION["matricula"] = $matricula;
-            $_SESSION["cargo"] = $row["cargo"];
-            $_SESSION["nome"] = $row["nome"]; // Adiciona o nome do administrador na sessão
+            $_SESSION["nome"] = $row["nome"];
 
-            if (isset($_COOKIE['cookies_aceitos']) && $_COOKIE['cookies_aceitos'] == 'true') {
-                // Define cookies para armazenar as informações do usuário por 7 dias (604800 segundos)
+            if (
+                isset($_COOKIE['cookies_aceitos']) &&
+                $_COOKIE['cookies_aceitos'] == 'true'
+            ) {
                 setcookie("matricula", $matricula, time() + 604800, "/");
                 setcookie("nome", $row["nome"], time() + 604800, "/");
-                setcookie("cargo", $row["cargo"], time() + 604800, "/");
             }
 
-            // Redireciona para a tela inicial após o login bem-sucedido
             header("Location: funcoes.php");
             exit();
         } else {
