@@ -68,6 +68,30 @@ As ferramentas devem estar instaladas e configuradas no seu sistema operacional.
 
 > Mantenha o terminal aberto durante o uso. Para encerrar o servidor, pressione Ctrl + C. A criação do banco e a configuração inicial só precisam ser feitas uma vez. Nas próximas execuções, mantenha o MySQL ativo e inicie o servidor PHP.
 
+### Docker (opcional)
+
+Para executar em contêineres, instale o Docker com Docker Compose. Nesta opção, não é necessário instalar PHP e MySQL diretamente no computador.
+
+Com o Docker em execução, abra o terminal na pasta principal do projeto:
+
+```bash
+docker compose up --build -d
+```
+
+Acesse [http://localhost:8080/index.html](http://localhost:8080/index.html).
+
+Na primeira execução, o ambiente cria o banco e importa as tabelas automaticamente. Esse banco é separado do MySQL instalado no computador.
+
+Para encerrar os contêineres:
+
+```bash
+docker compose down
+```
+
+Os dados são preservados entre execuções.
+
+> Configuração destinada ao desenvolvimento local. A execução com Docker ainda não foi validada.
+
 ## Fluxo de utilização
 
 1. Cadastrar um administrador e realizar o login.
