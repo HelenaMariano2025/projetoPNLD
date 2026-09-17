@@ -32,15 +32,14 @@ Facilitar a gestão dos livros didáticos por meio de uma plataforma que permita
 | CSS | Estilização da interface |
 | JavaScript e jQuery | Interações da interface |
 | Bootstrap | Estilos e componentes visuais |
-| Composer | Gerenciamento de dependências PHP |
 
 ## Como executar localmente
 
 ### Pré-requisitos
 
-- PHP com as extensões `mysqli`, `dom` e `mbstring`.
+- PHP com a extensão `mysqli`.
 - MySQL.
-- Composer.
+- Git para clonar o repositório, ou download do projeto em ZIP pelo GitHub.
 
 As ferramentas devem estar instaladas e configuradas no seu sistema operacional.
 
@@ -53,25 +52,21 @@ As ferramentas devem estar instaladas e configuradas no seu sistema operacional.
    cd projetoPNLD
    ```
 
-2. Instale as dependências:
+   Se baixou o ZIP, extraia os arquivos e abra o terminal na pasta principal do projeto.
 
-   ```bash
-   composer install
-   ```
+2. Inicie o MySQL e importe o arquivo `sql/bancoPNLD.sql` pelo seu gerenciador de banco de dados. Ele criará o banco `SistemaHBL` e suas tabelas.
 
-3. Inicie o MySQL e importe o arquivo `sql/bancoPNLD.sql` pelo seu gerenciador de banco de dados. Ele criará o banco `SistemaHBL`.
+3. Configure o usuário e a senha do banco em `php/conexao.php`. O usuário deve existir no MySQL e ter acesso ao banco `SistemaHBL`.
 
-4. Configure o usuário e a senha do banco em `php/conexao.php`. O usuário deve ter acesso ao banco `SistemaHBL`.
-
-5. Na pasta principal do projeto, inicie o servidor:
+4. Na pasta principal do projeto, inicie o servidor:
 
    ```bash
    php -S localhost:8000
    ```
 
-6. Abra http://localhost:8000/index.html no navegador.
+5. Abra http://localhost:8000/index.html no navegador.
 
-> Mantenha o terminal aberto durante o uso. Para encerrar o servidor, pressione Ctrl + C. A criação do banco e a configuração inicial só precisam ser feitas uma vez.
+> Mantenha o terminal aberto durante o uso. Para encerrar o servidor, pressione Ctrl + C. A criação do banco e a configuração inicial só precisam ser feitas uma vez. Nas próximas execuções, mantenha o MySQL ativo e inicie o servidor PHP.
 
 ## Fluxo de utilização
 
