@@ -21,6 +21,21 @@ Facilitar a gestão dos livros didáticos por meio de uma plataforma que permita
 - Registro de devoluções.
 - Consulta ao histórico de empréstimos e devoluções.
 
+
+## CRUD e testes
+
+### CRUD de Alunos
+
+O projeto utiliza operações de CRUD (Create, Read, Update e Delete) para o gerenciamento de alunos. As operações implementadas incluem inserção, consulta, atualização e inativação de alunos.
+
+Para compreender a implementação de CRUD e sua relação com testes de software, foi utilizado como referência o tutorial:
+
+- **PHP CRUD Tutorial – Create, Read, Update & Delete**: https://www.tutorialrepublic.com/php-tutorial/php-mysql-crud-application.php
+
+O tutorial apresenta a implementação das operações de cadastro, consulta, atualização e exclusão utilizando PHP e MySQL. A abordagem serviu como referência para compreender a estrutura das operações CRUD no projeto e relacioná-las à criação dos testes automatizados.
+
+Os testes do CRUD foram implementados com **PHPUnit**, utilizando testes unitários para verificar as operações do `AlunoRepository` e um teste de integração para verificar a comunicação com o banco de dados MySQL.
+
 ## Tecnologias utilizadas
 
 | Tecnologia | Finalidade |
