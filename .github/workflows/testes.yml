@@ -1,0 +1,68 @@
+name: Testes
+
+on:
+  push:
+    branches:
+      - main
+      - "task/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root_local
+          MYSQL_DATABASE: SistemaHBL
+          MYSQL_USER: pnld
+          MYSQL_PASSWORD: pnld_local
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u pnld -ppnld_local"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mysqli, xdebug
+          coverage: xdebug
+
+      - name: Instalar dependências
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Preparar banco de testes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          mysql -h 127.0.0.1 -u pnld -ppnld_local SistemaHBL < sql/bancoPNLD.sql
+
+      - name: Executar testes e cobertura
+        env:
+          XDEBUG_MODE: coverage
+          DB_HOST: 127.0.0.1
+          DB_USER: pnld
+          DB_PASSWORD: pnld_local
+          DB_NAME: SistemaHBL
+        run: |
+          php vendor/phpunit/phpunit/phpunit tests \
+            --coverage-text \
+            --coverage-clover coverage.xml
+
+      - name: Publicar relatório de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml

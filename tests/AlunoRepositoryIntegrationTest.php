@@ -9,18 +9,18 @@ class AlunoRepositoryIntegrationTest extends TestCase
     private $conn;
 
     protected function setUp(): void
-    {
-        $this->conn = new mysqli(
-            'db',
-            'pnld',
-            'pnld_local',
-            'SistemaHBL'
-        );
+{
+    $this->conn = new mysqli(
+        getenv('DB_HOST') ?: 'db',
+        getenv('DB_USER') ?: 'pnld',
+        getenv('DB_PASSWORD') ?: 'pnld_local',
+        getenv('DB_NAME') ?: 'SistemaHBL'
+    );
 
-        if ($this->conn->connect_error) {
-            $this->fail('Não foi possível conectar ao banco: ' . $this->conn->connect_error);
-        }
+    if ($this->conn->connect_error) {
+        $this->fail('Não foi possível conectar ao banco: ' . $this->conn->connect_error);
     }
+}
 
     protected function tearDown(): void
     {
