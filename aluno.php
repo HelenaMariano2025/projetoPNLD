@@ -154,6 +154,8 @@ if ($result->num_rows > 0) {
         echo "<p>Sexo: " . $row["sexo"] . "</p>";
         echo "<p>Email: " . $row["email"] . "</p>";
         echo "<p>Código da Turma: " . $row["codigoTurma"] . "</p>";
+        
+        echo "<a href='editar_aluno.php?matricula=" . $row["matricula"] . "' class='btn btn-primary'>Editar</a>";
         echo "</div>";
         echo "</div>";
         $count++;
