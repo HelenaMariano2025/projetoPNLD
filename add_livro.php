@@ -1,29 +1,35 @@
 <?php
-session_start(); // Inicia a sessão
 
-include 'php/conexao.php';
+session_start();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $isbn = $_POST['isbn'];
-    $titulo = $_POST['titulo'];
-    $autor = $_POST['autor'];
-    $codigo_editora = $_POST['codigo_editora'];
-    $ano = $_POST['ano'];
-    $situacao = $_POST['situacao'];
-    $edicao = $_POST['edicao'];
-    $qtde_disponivel = $_POST['qtde_disponivel'];
+require_once __DIR__ . '/php/conexao.php';
+require_once __DIR__ . '/php/LivroRepository.php';
 
-    $sql = "INSERT INTO livro (isbn, titulo, autor, codigo_editora, ano, situacao, edicao, qtde_disponivel) VALUES ('$isbn', '$titulo', '$autor', $codigo_editora, $ano, '$situacao', $edicao, $qtde_disponivel)";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $repository = new LivroRepository($conn);
 
-    if ($conn->query($sql) === TRUE) {
-      $_SESSION['mensagem'] = "Novo livro adicionado com sucesso!";
-    } else {
-      $_SESSION['mensagem'] = "Erro ao adicionar novo livro: " . $conn->error;
+    try {
+        $cadastrado = $repository->inserir(
+            (string) $_POST['isbn'],
+            (string) $_POST['titulo'],
+            (string) $_POST['autor'],
+            (int) $_POST['codigo_editora'],
+            (int) $_POST['ano'],
+            (string) $_POST['situacao'],
+            (int) $_POST['edicao'],
+            (int) $_POST['qtde_disponivel']
+        );
+
+        $_SESSION['mensagem'] = $cadastrado
+            ? 'Novo livro adicionado com sucesso!'
+            : 'Erro ao adicionar novo livro.';
+    } catch (mysqli_sql_exception $erro) {
+        $_SESSION['mensagem'] = 'Erro ao adicionar novo livro.';
     }
 
     $conn->close();
-    
 }
+
 ?>
 
 <!DOCTYPE html>
