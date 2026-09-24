@@ -21,6 +21,7 @@ class LivroRepository
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
         $stmt = $this->conn->prepare($sql);
+
         $stmt->bind_param(
             'sssiisii',
             $isbn,
@@ -34,5 +35,28 @@ class LivroRepository
         );
 
         return $stmt->execute();
+    }
+
+    public function consultarDisponiveis(?string $titulo = null): mysqli_result|false
+    {
+        $sql = "SELECT * FROM livro
+                WHERE situacao = 'ativo' AND qtde_disponivel > 0";
+
+        $temBusca = $titulo !== null && trim($titulo) !== '';
+
+        if ($temBusca) {
+            $sql .= ' AND titulo LIKE ?';
+        }
+
+        $stmt = $this->conn->prepare($sql);
+
+        if ($temBusca) {
+            $termo = '%' . trim($titulo) . '%';
+            $stmt->bind_param('s', $termo);
+        }
+
+        $stmt->execute();
+
+        return $stmt->get_result();
     }
 }

@@ -11,10 +11,9 @@
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Livros Disponíveis</title> 
+  <title>Livros Disponíveis</title>
   <!-- Favicon -->
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
 
   <!-- Bootstrap core CSS -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
@@ -27,20 +26,22 @@
 
   <!-- Font Awesome style -->
   <link href="css/font-awesome.min.css" rel="stylesheet" />
+
   <!-- Nice select -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
     integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
+
   <!-- Datepicker -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
+
   <!-- Custom styles for this template -->
   <link href="css/style.css" rel="stylesheet" />
+
   <!-- Responsive style -->
   <link href="css/responsive.css" rel="stylesheet" />
-
 </head>
 
 <body class="sub_page">
-
   <div class="hero_area">
     <!-- header section starts -->
     <header class="header_section">
@@ -68,6 +69,7 @@
           </div>
         </div>
       </div>
+
       <div class="header_bottom">
         <div class="container-fluid">
           <nav class="navbar navbar-expand-lg custom_nav-container ">
@@ -85,11 +87,9 @@
                   <li class="nav-item ">
                     <a class="nav-link" href="funcoes.php">HOME <span class="sr-only">(current)</span></a>
                   </li>
-
                   <li class="nav-item">
                     <a class="nav-link" href="add_livro.php">ADICIONAR LIVRO</a>
                   </li>
-
                 </ul>
               </div>
             </div>
@@ -109,52 +109,46 @@
         </h2>
       </div>
     </div>
+
     <div class="container px-0">
-      <div id="customCarousel2" class="carousel  carousel-fade" data-ride="carousel">
+      <div id="customCarousel2" class="carousel carousel-fade" data-ride="carousel">
         <div class="carousel-inner">
           <div class="search_container">
-            <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
+            <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>" method="get">
               <input type="text" name="titulo" placeholder="Buscar por título do livro">
               <button type="submit">Buscar</button>
             </form>
           </div>
+
           <?php
-          // Incluir o arquivo de conexão
-          include 'php/conexao.php';
+          require_once __DIR__ . '/php/conexao.php';
+          require_once __DIR__ . '/php/LivroRepository.php';
 
-          if (isset($_GET['titulo']) && !empty($_GET['titulo'])) {
-            $titulo = $_GET['titulo'];
+          $repository = new LivroRepository($conn);
+          $titulo = isset($_GET['titulo']) ? (string) $_GET['titulo'] : null;
+          $result = $repository->consultarDisponiveis($titulo);
 
-            // Consulta SQL para buscar os livros com o título informado
-            $sql = "SELECT * FROM livro WHERE situacao = 'ativo' AND qtde_disponivel > 0 AND titulo LIKE '%$titulo%'";
-          } else {
-            // Se nenhum termo de pesquisa foi enviado, listar todos os livros disponíveis
-            $sql = "SELECT * FROM livro WHERE situacao = 'ativo' AND qtde_disponivel > 0";
-          }
-
-          $result = $conn->query($sql);
-
-          if ($result->num_rows > 0) {
+          if ($result !== false && $result->num_rows > 0) {
             $count = 0;
-            // Exibe cada livro disponível
+
             while ($row = $result->fetch_assoc()) {
-              // Define a classe 'active' para o primeiro item do carousel
-              $active_class = ($count == 0) ? 'active' : '';
-              echo "<div class='carousel-item $active_class'>";
+              $activeClass = $count === 0 ? 'active' : '';
+
+              echo "<div class='carousel-item $activeClass'>";
               echo "<div class='box'>";
               echo "<div class='client_info'>";
               echo "<div class='client_name'>";
-              echo "<h5>" . $row["isbn"] . "</h5>";
-              echo "<h6>" . $row["titulo"] . "</h6>";
+              echo '<h5>' . htmlspecialchars((string) $row['isbn'], ENT_QUOTES, 'UTF-8') . '</h5>';
+              echo '<h6>' . htmlspecialchars((string) $row['titulo'], ENT_QUOTES, 'UTF-8') . '</h6>';
               echo "</div>";
               echo "</div>";
-              echo "<p>" . $row["autor"] . "</p>";
+              echo '<p>' . htmlspecialchars((string) $row['autor'], ENT_QUOTES, 'UTF-8') . '</p>';
               echo "</div>";
               echo "</div>";
+
               $count++;
             }
           } else {
-            // Se não houver livros disponíveis, exibe uma mensagem
             echo "<div class='carousel-item active'>";
             echo "<div class='box'>";
             echo "<p>Nenhum livro disponível no momento.</p>";
@@ -162,8 +156,10 @@
             echo "</div>";
           }
 
+          $conn->close();
           ?>
         </div>
+
         <div class="carousel_btn-box">
           <a class="carousel-control-prev" href="#customCarousel2" role="button" data-slide="prev">
             <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -178,22 +174,13 @@
     </div>
   </section>
 
-
   <!-- footer section -->
-
   <script src="js/jquery-3.4.1.min.js"></script>
-
   <script src="js/bootstrap.js"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js" integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"
+    integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
-
   <script src="js/custom.js"></script>
-  </p>
-
 </body>
-
 </html>
