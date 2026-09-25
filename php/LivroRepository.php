@@ -59,4 +59,38 @@ class LivroRepository
 
         return $stmt->get_result();
     }
+
+    public function atualizar(
+        int $codigo,
+        string $isbn,
+        string $titulo,
+        string $autor,
+        int $codigoEditora,
+        int $ano,
+        string $situacao,
+        int $edicao,
+        int $quantidadeDisponivel
+    ): bool {
+        $sql = 'UPDATE livro
+                SET isbn = ?, titulo = ?, autor = ?, codigo_editora = ?,
+                    ano = ?, situacao = ?, edicao = ?, qtde_disponivel = ?
+                WHERE codigo = ?';
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bind_param(
+            'sssiisiii',
+            $isbn,
+            $titulo,
+            $autor,
+            $codigoEditora,
+            $ano,
+            $situacao,
+            $edicao,
+            $quantidadeDisponivel,
+            $codigo
+        );
+
+        return $stmt->execute();
+    }
 }
