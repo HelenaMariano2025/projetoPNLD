@@ -116,4 +116,28 @@ class LivroRepositoryTest extends TestCase
 
         $this->assertTrue($resultado);
     }
+
+    public function testExcluirLivroPreservandoHistorico(): void
+    {
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->once())
+            ->method('bind_param')
+            ->with('i', 42)
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with(
+                "UPDATE livro SET situacao = 'inativo' WHERE codigo = ?"
+            )
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertTrue($repository->excluir(42));
+    }
 }

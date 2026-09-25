@@ -93,4 +93,14 @@ class LivroRepository
 
         return $stmt->execute();
     }
+
+    public function excluir(int $codigo): bool
+    {
+        $sql = "UPDATE livro SET situacao = 'inativo' WHERE codigo = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $codigo);
+
+        return $stmt->execute();
+    }
 }
