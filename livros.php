@@ -84,6 +84,12 @@
       <div class="heading_container">
         <h2><span>Livros</span></h2>
       </div>
+
+      <?php if (($_GET['exclusao'] ?? '') === 'sucesso'): ?>
+        <p role="status">Livro excluído da listagem com sucesso.</p>
+      <?php elseif (($_GET['exclusao'] ?? '') === 'erro'): ?>
+        <p role="alert">Não foi possível excluir o livro.</p>
+      <?php endif; ?>
     </div>
 
     <div class="container px-0">
@@ -112,6 +118,7 @@
 
               while ($row = $result->fetch_assoc()) {
                   $activeClass = $count === 0 ? 'active' : '';
+                  $codigo = (int) $row['codigo'];
 
                   echo "<div class='carousel-item $activeClass'>";
                   echo "<div class='box'>";
@@ -121,11 +128,15 @@
                   echo '<h6>' . htmlspecialchars((string) $row['titulo'], ENT_QUOTES, 'UTF-8') . '</h6>';
                   echo '</div>';
                   echo '</div>';
-                  echo '<p>' . htmlspecialchars((string) $row['autor'], ENT_QUOTES, 'UTF-8') . '</p>';
 
-                  echo '<p><a href="editar_livro.php?codigo='
-                      . (int) $row['codigo']
-                      . '">Editar livro</a></p>';
+                  echo '<p>' . htmlspecialchars((string) $row['autor'], ENT_QUOTES, 'UTF-8') . '</p>';
+                  echo '<p><a href="editar_livro.php?codigo=' . $codigo . '">Editar livro</a></p>';
+
+                  echo '<form action="excluir_livro.php" method="post" '
+                      . 'onsubmit="return confirm(\'Deseja excluir este livro da listagem?\')">';
+                  echo '<input type="hidden" name="codigo" value="' . $codigo . '">';
+                  echo '<button type="submit">Excluir livro</button>';
+                  echo '</form>';
 
                   echo '</div>';
                   echo '</div>';
