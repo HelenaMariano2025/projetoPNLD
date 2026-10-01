@@ -120,3 +120,11 @@ Os dados são preservados entre execuções.
 ## Colaboradores
 
 Os participantes com contribuições registradas no Git podem ser consultados na [página de contribuidores do projeto](https://github.com/HelenaMariano2025/projetoPNLD/graphs/contributors).
+
+## CRUD de livros e testes
+
+O CRUD de livros permite cadastrar, consultar, atualizar e inativar livros. A inativação funciona como exclusão lógica para preservar o histórico de empréstimos.
+
+Como referência para um CRUD em PHP com testes, consultei o [PHP CRUD Users API](https://github.com/jonsanchezr/php-crud-users-api). O repositório mostra a organização de uma API CRUD com MySQL, possui testes na pasta `tests` e orienta a executá-los com `composer test`. A implementação de livros deste projeto utiliza sua própria estrutura com MySQLi e PHPUnit.
+
+Os [testes de unidade](tests/LivroRepositoryTest.php) cobrem as quatro operações com mocks. O [teste de integração](tests/LivroRepositoryIntegrationTest.php) executa o CRUD com MySQL real. A [CI](.github/workflows/testes.yml) executa os testes e publica o relatório de cobertura.
