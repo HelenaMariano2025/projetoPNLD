@@ -28,4 +28,5 @@ class EmprestimoRepositoryTest extends TestCase
         $this->assertTrue($primeiraDevolucao);
         $this->assertFalse($segundaDevolucao);
     }
+    
 }
