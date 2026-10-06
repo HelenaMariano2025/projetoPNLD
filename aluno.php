@@ -120,6 +120,14 @@
 </form>
 </div>
 <?php
+
+
+session_start();
+
+require_once 'php/auth.php';
+exigirAutenticacao();
+
+
 // Incluir o arquivo de conexão
 include 'php/conexao.php';
 

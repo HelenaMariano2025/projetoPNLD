@@ -106,6 +106,11 @@
           </div>
 
           <?php
+          session_start();
+
+          require_once 'php/auth.php';
+          exigirAutenticacao();
+          
           require_once __DIR__ . '/php/conexao.php';
           require_once __DIR__ . '/php/LivroRepository.php';
 
