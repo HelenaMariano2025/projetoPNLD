@@ -1,36 +1,42 @@
 <?php
 session_start();
+
 include 'php/conexao.php';
+require_once 'php/AdministradorRepository.php';
+require_once 'php/regras.php';
+
+$repository = new AdministradorRepository($conn);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $matricula = $_POST["matricula"];
-    $senha = $_POST["senha"];
+    $matricula = $_POST["matricula"] ?? '';
+    $senha = $_POST["senha"] ?? '';
 
-    $sql = "SELECT * FROM administrador WHERE matricula = '$matricula'";
-    $resultado = $conn->query($sql);
+    if (!validarCampoObrigatorio($matricula) || !validarCampoObrigatorio($senha)) {
+        echo "Matrícula e senha são obrigatórias.";
+    } else {
+        $administrador = autenticarAdministrador(
+            $matricula,
+            $senha,
+            $repository
+        );
 
-    if ($resultado->num_rows == 1) {
-        $row = $resultado->fetch_assoc();
-
-        if ($senha === $row["senha"]) {
-            $_SESSION["matricula"] = $matricula;
-            $_SESSION["nome"] = $row["nome"];
+        if ($administrador !== null) {
+            $_SESSION["matricula"] = $administrador["matricula"];
+            $_SESSION["nome"] = $administrador["nome"];
 
             if (
                 isset($_COOKIE['cookies_aceitos']) &&
                 $_COOKIE['cookies_aceitos'] == 'true'
             ) {
-                setcookie("matricula", $matricula, time() + 604800, "/");
-                setcookie("nome", $row["nome"], time() + 604800, "/");
+                setcookie("matricula", $administrador["matricula"], time() + 604800, "/");
+                setcookie("nome", $administrador["nome"], time() + 604800, "/");
             }
 
             header("Location: funcoes.php");
             exit();
-        } else {
-            echo "Senha incorreta.";
         }
-    } else {
-        echo "Matrícula não encontrada.";
+
+        echo "Matrícula ou senha inválida.";
     }
 }
 ?>
