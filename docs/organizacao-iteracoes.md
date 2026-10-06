@@ -26,7 +26,7 @@ A primeira iteração é composta pelas **US01, US02 e US03**.
 | ------------------------------------------------------------- | ---------------------------- | --------------------- | ---------------------------- | ---------------------------- |
 | **US01 – Cadastrar administrador**                            | Isabelle Cavalcanti da Silva | Helena Dantas Mariano | Jaine Souza da Luz           | Isabelle Cavalcanti da Silva |
 | **US02 – Autenticar administrador e acessar funcionalidades** | Helena Dantas Mariano        | Jaine Souza da Luz    | Isabelle Cavalcanti da Silva | Helena Dantas Mariano        |
-| **US03 – Gerenciar alunos**                                   | Jaine Souza da Luz           | Helena Dantas Mariano | Isabelle Cavalcanti da Silva | Jaine Souza da Luz           |
+| **US03 – Gerenciar alunos**                                   | Jaine Souza da Luz           | Isabelle Cavalcanti da Silva | Helena Dantas Mariano | Jaine Souza da Luz           |
 
 ### Atividades previstas
 
