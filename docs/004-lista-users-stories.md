@@ -63,8 +63,8 @@ Para cada história, são apresentados os requisitos envolvidos, a prioridade, a
 | ***Estimativa*** | 10h | **Tempo Gasto (real):** | A registrar |
 | ***Tamanho Funcional*** | a registrar |  |  |
 | ***Analista*** | Jaine (responsável por especificar/detalhar o US). |  |  |
-| ***Desenvolvedor*** | Helena (responsável por implementar e realizar testes de unidade e testes de integração). |  |  |
-| ***Revisor*** | Isabelle (responsável por avaliar a implementação e executar os –testes de unidade e testes de integração). |  |  |
+| ***Desenvolvedor*** | Isabelle (responsável por implementar e realizar testes de unidade e testes de integração). |  |  |
+| ***Revisor*** | Helena (responsável por avaliar a implementação e executar os –testes de unidade e testes de integração). |  |  |
 | ***Testador*** | Jaine (responsável por executar os Testes de Aceitação e fazer o relatório de testes). |  |  |
 | **Testes de Aceitação (TA)** |  |  |  |
 | Código | Descrição |  |  |
