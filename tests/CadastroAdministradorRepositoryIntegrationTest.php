@@ -11,20 +11,30 @@ class CadastroAdministradorRepositoryIntegrationTest extends TestCase
     protected function setUp(): void
     {
         $this->conn = new mysqli(
-    	getenv('DB_HOST') ?: 'localhost',
-    	getenv('DB_USER') ?: 'pnld',
-    	getenv('DB_PASSWORD') ?: '123456',
-    	getenv('DB_NAME') ?: 'SistemaHBL'
-	);
+            getenv('DB_HOST') ?: 'localhost',
+            getenv('DB_USER') ?: 'pnld',
+            getenv('DB_PASSWORD') ?: '123456',
+            getenv('DB_NAME') ?: 'SistemaHBL'
+        );
 
         if ($this->conn->connect_error) {
-            $this->fail('Não foi possível conectar ao banco: ' . $this->conn->connect_error);
+            $this->fail(
+                'Não foi possível conectar ao banco: ' .
+                $this->conn->connect_error
+            );
         }
+
+        $this->conn->query(
+            "DELETE FROM administrador WHERE matricula = '999999'"
+        );
     }
 
     protected function tearDown(): void
     {
-        $this->conn->query("DELETE FROM administrador WHERE matricula = 999999");
+        $this->conn->query(
+            "DELETE FROM administrador WHERE matricula = '999999'"
+        );
+
         $this->conn->close();
     }
 
@@ -33,7 +43,7 @@ class CadastroAdministradorRepositoryIntegrationTest extends TestCase
         $repository = new CadastroAdministradorRepository($this->conn);
 
         $resultado = $repository->inserir(
-            999999,
+            '999999',
             'Administrador Teste',
             '123456'
         );
@@ -41,9 +51,16 @@ class CadastroAdministradorRepositoryIntegrationTest extends TestCase
         $this->assertTrue($resultado);
 
         $consulta = $this->conn->query(
-            "SELECT * FROM administrador WHERE matricula = 999999"
+            "SELECT * FROM administrador WHERE matricula = '999999'"
         );
 
         $this->assertEquals(1, $consulta->num_rows);
+
+        $administrador = $consulta->fetch_assoc();
+
+        $this->assertEquals(
+            'Administrador Teste',
+            $administrador['nome']
+        );
     }
 }

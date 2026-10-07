@@ -2,41 +2,130 @@
 
 use PHPUnit\Framework\TestCase;
 
+require_once __DIR__ . '/../php/CadastroAdministrador.php';
 require_once __DIR__ . '/../php/CadastroAdministradorRepository.php';
 
 class CadastroAdministradorRepositoryTest extends TestCase
 {
-    public function testInserirAdministrador()
+    public function testCadastraAdministradorComDadosValidos()
     {
-        $stmt = $this->createMock(mysqli_stmt::class);
+        $repository = $this->createMock(CadastroAdministradorRepository::class);
 
-        $stmt->expects($this->once())
-             ->method('bind_param')
-             ->willReturn(true);
+        $repository
+            ->expects($this->once())
+            ->method('inserir')
+            ->with(
+                '123456',
+                'Administrador Teste',
+                'senha123'
+            )
+            ->willReturn(true);
 
-        $stmt->expects($this->once())
-             ->method('execute')
-             ->willReturn(true);
+        $cadastro = new CadastroAdministrador($repository);
 
-        $conn = $this->createMock(mysqli::class);
-
-        $conn->expects($this->once())
-             ->method('prepare')
-             ->with(
-                 "INSERT INTO administrador
-                (matricula, nome, senha)
-                VALUES (?, ?, ?)"
-             )
-             ->willReturn($stmt);
-
-        $repository = new CadastroAdministradorRepository($conn);
-
-        $resultado = $repository->inserir(
-            123456,
-            'João da Silva',
-            '123456'
+        $resultado = $cadastro->cadastrar(
+            '123456',
+            'Administrador Teste',
+            'senha123'
         );
 
-        $this->assertTrue($resultado);
+        $this->assertEquals(
+            'Administrador cadastrado com sucesso.',
+            $resultado
+        );
+    }
+
+    public function testNaoCadastraSemMatricula()
+    {
+        $repository = $this->createMock(CadastroAdministradorRepository::class);
+
+        $repository
+            ->expects($this->never())
+            ->method('inserir');
+
+        $cadastro = new CadastroAdministrador($repository);
+
+        $resultado = $cadastro->cadastrar(
+            '',
+            'Administrador Teste',
+            'senha123'
+        );
+
+        $this->assertEquals(
+            'A matrícula é obrigatória.',
+            $resultado
+        );
+    }
+
+    public function testNaoCadastraSemNome()
+    {
+        $repository = $this->createMock(CadastroAdministradorRepository::class);
+
+        $repository
+            ->expects($this->never())
+            ->method('inserir');
+
+        $cadastro = new CadastroAdministrador($repository);
+
+        $resultado = $cadastro->cadastrar(
+            '123456',
+            '',
+            'senha123'
+        );
+
+        $this->assertEquals(
+            'O nome é obrigatório.',
+            $resultado
+        );
+    }
+
+    public function testNaoCadastraSemSenha()
+    {
+        $repository = $this->createMock(CadastroAdministradorRepository::class);
+
+        $repository
+            ->expects($this->never())
+            ->method('inserir');
+
+        $cadastro = new CadastroAdministrador($repository);
+
+        $resultado = $cadastro->cadastrar(
+            '123456',
+            'Administrador Teste',
+            ''
+        );
+
+        $this->assertEquals(
+            'A senha é obrigatória.',
+            $resultado
+        );
+    }
+
+    public function testRetornaErroQuandoRepositorioNaoConsegueCadastrar()
+    {
+        $repository = $this->createMock(CadastroAdministradorRepository::class);
+
+        $repository
+            ->expects($this->once())
+            ->method('inserir')
+            ->with(
+                '123456',
+                'Administrador Teste',
+                'senha123'
+            )
+            ->willReturn(false);
+
+        $cadastro = new CadastroAdministrador($repository);
+
+        $resultado = $cadastro->cadastrar(
+            '123456',
+            'Administrador Teste',
+            'senha123'
+        );
+
+        $this->assertEquals(
+            'Não foi possível cadastrar o administrador.',
+            $resultado
+        );
     }
 }

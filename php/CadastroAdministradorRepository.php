@@ -17,12 +17,11 @@ class CadastroAdministradorRepository
 
         $stmt = $this->conn->prepare($sql);
 
-        $stmt->bind_param(
-            "iss",
-            $matricula,
-            $nome,
-            $senha
-        );
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param("sss", $matricula, $nome, $senha);
 
         return $stmt->execute();
     }
