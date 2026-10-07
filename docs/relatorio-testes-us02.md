@@ -1,9 +1,3 @@
-Sim. O relatório precisa deixar claro que você **não apenas executou comandos**, mas participou do fluxo completo da atividade: **desenvolvedora em uma US e, nesta etapa, QA Engineer/Testadora da US02 da colega Jaine**.
-
-Também vou separar **testes unitários, teste de integração, testes de aceitação e cobertura**, deixando claro o que passou e o que apresentou falha.
-
-Use este conteúdo no arquivo `docs/relatorio-testes-us02.md`:
-
 # Relatório de Testes e Garantia de Qualidade — US02
 
 ## 1. Identificação
