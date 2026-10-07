@@ -1,3 +1,10 @@
+<?php
+require_once 'php/auth.php';
+exigirAutenticacao();
+
+include 'php/conexao.php';
+
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
