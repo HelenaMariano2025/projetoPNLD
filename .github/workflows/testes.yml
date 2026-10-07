@@ -1,4 +1,4 @@
-name: Testes
+name: Testes e SonarQube
 
 on:
   push:
@@ -32,13 +32,16 @@ jobs:
     steps:
       - name: Baixar código
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"
-          extensions: mysqli, xdebug
+          extensions: mysqli, pdo_mysql, mbstring, dom, xml, xmlwriter
           coverage: xdebug
+          tools: composer:v2
 
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist
@@ -57,7 +60,7 @@ jobs:
           DB_PASSWORD: pnld_local
           DB_NAME: SistemaHBL
         run: |
-          php vendor/phpunit/phpunit/phpunit tests \
+          vendor/bin/phpunit --configuration phpunit.xml \
             --coverage-text \
             --coverage-clover coverage.xml
 
@@ -66,3 +69,10 @@ jobs:
         with:
           name: coverage-report
           path: coverage.xml
+          if-no-files-found: error
+
+      - name: Enviar análise para o SonarQube
+        uses: SonarSource/sonarqube-scan-action@v4.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
