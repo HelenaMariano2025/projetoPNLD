@@ -33,3 +33,9 @@ function autenticarAdministrador($matricula, $senha, $repository)
 
     return $administrador;
 }
+
+function validarIdLivro($idLivro)
+{
+    return !empty($idLivro);
+}
+
