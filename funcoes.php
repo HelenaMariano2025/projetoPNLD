@@ -1,5 +1,8 @@
 <?php
 session_start();
+
+require_once 'php/auth.php';
+exigirAutenticacao();
 ?>
 
 <!DOCTYPE html>

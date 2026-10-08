@@ -1,3 +1,10 @@
+<?php
+require_once 'php/auth.php';
+exigirAutenticacao();
+
+include 'php/conexao.php';
+
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -106,6 +113,11 @@
           </div>
 
           <?php
+          session_start();
+
+          require_once 'php/auth.php';
+          exigirAutenticacao();
+          
           require_once __DIR__ . '/php/conexao.php';
           require_once __DIR__ . '/php/LivroRepository.php';
 
