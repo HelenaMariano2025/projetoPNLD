@@ -49,10 +49,10 @@ Cada integrante será responsável pelo desenvolvimento de uma User Story e part
 
 | **User Story**               | **Estimativa** |
 | ---------------------------- | -------------- |
-| US04 - Gerenciar Turmas      | 6h             |
-| US05 - Gerenciar Livros      | 7h             |
-| US06 - Registrar empréstimos | 10h            |
-| **Total**                    | **23h**        |
+| US04 - Gerenciar Turmas      | 8h             |
+| US05 - Gerenciar Livros      | 10h            |
+| US06 - Registrar empréstimos | 8h             |
+| **Total**                    | **26h**        |
 
 As estimativas deverão ser revisadas no início da iteração, considerando as implementações existentes, as correções necessárias e as atividades de testes. O tempo efetivamente utilizado será registrado nas issues.
 
