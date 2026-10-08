@@ -1,45 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<?php
+session_start();
 
-<head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-  <title>Alunos Disponíveis</title> 
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
+require_once __DIR__ . '/php/conexao.php';
+require_once __DIR__ . '/php/AlunoRepository.php';
 
-  <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+const ALUNO_NAO_ENCONTRADO = 'Aluno não encontrado.';
 
-  <!-- Fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+class FalhaPersistenciaAlunoException extends RuntimeException
+{
+}
 
-  <!-- Owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-
-  <!-- Font Awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- Nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
-    integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- Datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- Responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
-
-</head>
-
+$conn->set_charset('utf8mb4');
+$repository = new AlunoRepository($conn);
 <body class="sub_page">
 
   <div class="hero_area">
@@ -131,91 +105,495 @@ exigirAutenticacao();
 // Incluir o arquivo de conexão
 include 'php/conexao.php';
 
-if (isset($_GET['nome']) && !empty($_GET['nome'])) {
-    $nome = $_GET['nome'];
-
-    // Consulta SQL para buscar os alunos com o nome informado
-    $sql = "SELECT * FROM aluno WHERE situacao = 'ativo' AND nome LIKE '%$nome%'";
-} else {
-    // Se nenhum termo de pesquisa foi enviado, listar todos os alunos ativos
-    $sql = "SELECT * FROM aluno WHERE situacao = 'ativo'";
+function escapar($valor)
+{
+    return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
 }
 
-$result = $conn->query($sql);
+if (!isset($_SESSION['csrf_alunos'])) {
+    $_SESSION['csrf_alunos'] = bin2hex(random_bytes(32));
+}
 
-if ($result->num_rows > 0) {
-    $count = 0;
-    // Exibe cada aluno disponível
-    while ($row = $result->fetch_assoc()) {
-        // Define a classe 'active' para o primeiro item do carousel
-        $active_class = ($count == 0) ? 'active' : '';
-        echo "<div class='carousel-item $active_class'>";
-        echo "<div class='box'>";
-        echo "<div class='client_info'>";
-        echo "<div class='client_name'>";
-        echo "<h5>Matrícula: " . $row["matricula"] . "</h5>";
-        echo "<h6>Nome: " . $row["nome"] . "</h6>";
-        echo "</div>";
-        echo "</div>";
-        echo "<p>Data de Nascimento: " . $row["datnasc"] . "</p>";
-        echo "<p>Endereço: " . $row["endereco"] . "</p>";
-        echo "<p>Sexo: " . $row["sexo"] . "</p>";
-        echo "<p>Email: " . $row["email"] . "</p>";
-        echo "<p>Código da Turma: " . $row["codigoTurma"] . "</p>";
+$erro = '';
+$alunoEdicao = null;
 
-        echo "<a href='editar_aluno.php?matricula=" . $row["matricula"] . "' class='btn btn-primary'>Editar</a>";
+$dados = [
+    'matricula' => '',
+    'nome' => '',
+    'datnasc' => '',
+    'endereco' => '',
+    'sexo' => 'F',
+    'email' => '',
+    'situacao' => 'ativo',
+    'codigoTurma' => ''
+];
 
-        echo "<a href='deletar_aluno.php?matricula=" . $row["matricula"] . "' 
-              class='btn btn-danger'
-              onclick=\"return confirm('Tem certeza que deseja excluir este aluno?');\">
-              Excluir
-              </a>";
-        echo "</div>";
-        echo "</div>";
-        $count++;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $acao = is_string($_POST['acao'] ?? null)
+        ? $_POST['acao']
+        : '';
+
+    try {
+        $token = $_POST['csrf'] ?? '';
+
+        if (
+            !is_string($token) ||
+            !hash_equals($_SESSION['csrf_alunos'], $token)
+        ) {
+            throw new InvalidArgumentException(
+                'Formulário inválido. Atualize a página e tente novamente.'
+            );
+        }
+
+        foreach (array_keys($dados) as $campo) {
+            $dados[$campo] = is_string($_POST[$campo] ?? null)
+                ? trim($_POST[$campo])
+                : '';
+        }
+
+        if (!preg_match('/^\d{1,18}$/D', $dados['matricula'])) {
+            throw new InvalidArgumentException(
+                'Informe uma matrícula numérica válida, com até 18 dígitos.'
+            );
+        }
+
+        if ($acao === 'inativar') {
+            if (!$repository->consultarPorMatricula($dados['matricula'])) {
+                throw new InvalidArgumentException(ALUNO_NAO_ENCONTRADO);
+            }
+
+            if (!$repository->inativar($dados['matricula'])) {
+                throw new FalhaPersistenciaAlunoException(
+                    'Não foi possível inativar o aluno.'
+                );
+            }
+
+            $_SESSION['mensagem_alunos'] = 'Aluno inativado com sucesso!';
+            header('Location: aluno.php');
+            exit;
+        }
+
+        if (!in_array($acao, ['cadastrar', 'atualizar'], true)) {
+            throw new InvalidArgumentException('Operação inválida.');
+        }
+
+        foreach (
+            ['nome', 'datnasc', 'endereco', 'sexo', 'email', 'codigoTurma']
+            as $campo
+        ) {
+            if ($dados[$campo] === '') {
+                throw new InvalidArgumentException(
+                    'Preencha todos os campos obrigatórios.'
+                );
+            }
+        }
+
+        if (!filter_var($dados['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Informe um e-mail válido.');
+        }
+
+        $data = DateTimeImmutable::createFromFormat(
+            '!Y-m-d',
+            $dados['datnasc']
+        );
+
+        if (!$data || $data->format('Y-m-d') !== $dados['datnasc']) {
+            throw new InvalidArgumentException(
+                'Informe uma data de nascimento válida.'
+            );
+        }
+
+        if (!in_array($dados['sexo'], ['M', 'F'], true)) {
+            throw new InvalidArgumentException(
+                'Selecione uma opção válida para sexo.'
+            );
+        }
+
+        if (!in_array($dados['situacao'], ['ativo', 'inativo'], true)) {
+            throw new InvalidArgumentException('Selecione uma situação válida.');
+        }
+
+        if (
+            !ctype_digit($dados['codigoTurma']) ||
+            strlen($dados['codigoTurma']) > 10 ||
+            (int) $dados['codigoTurma'] > 2147483647
+        ) {
+            throw new InvalidArgumentException('Selecione uma turma válida.');
+        }
+
+        $stmt = $conn->prepare(
+            'SELECT codigo FROM turma WHERE codigo = ?'
+        );
+        $stmt->bind_param('s', $dados['codigoTurma']);
+        $stmt->execute();
+
+        if (!$stmt->get_result()->fetch_assoc()) {
+            throw new InvalidArgumentException(
+                'A turma selecionada não existe.'
+            );
+        }
+
+        $existente = $repository->consultarPorMatricula($dados['matricula']);
+
+        if ($acao === 'cadastrar' && $existente) {
+            throw new InvalidArgumentException(
+                'Já existe um aluno com essa matrícula.'
+            );
+        }
+
+        if ($acao === 'atualizar' && !$existente) {
+            throw new InvalidArgumentException(ALUNO_NAO_ENCONTRADO);
+        }
+
+        $argumentos = [
+            $dados['matricula'],
+            $dados['nome'],
+            $dados['datnasc'],
+            $dados['endereco'],
+            $dados['sexo'],
+            $dados['email'],
+            $dados['situacao'],
+            $dados['codigoTurma']
+        ];
+
+        $salvo = $acao === 'cadastrar'
+            ? $repository->inserir(...$argumentos)
+            : $repository->atualizar(...$argumentos);
+
+        if (!$salvo) {
+            throw new FalhaPersistenciaAlunoException(
+                'Não foi possível salvar os dados do aluno.'
+            );
+        }
+
+        $_SESSION['mensagem_alunos'] = $acao === 'cadastrar'
+            ? 'Aluno cadastrado com sucesso!'
+            : 'Dados do aluno atualizados com sucesso!';
+
+        header('Location: aluno.php');
+        exit;
+    } catch (mysqli_sql_exception $e) {
+        $erro = 'Não foi possível concluir a operação. Confira os dados informados.';
+    } catch (InvalidArgumentException | FalhaPersistenciaAlunoException $e) {
+        $erro = $e->getMessage();
     }
-} else {
-    // Se não houver alunos disponíveis, exibe uma mensagem
-    echo "<div class='carousel-item active'>";
-    echo "<div class='box'>";
-    echo "<p>Nenhum aluno disponível no momento.</p>";
-    echo "</div>";
-    echo "</div>";
+
+    if ($acao === 'atualizar') {
+        $alunoEdicao = $dados;
+    }
 }
 
+if (
+    $_SERVER['REQUEST_METHOD'] !== 'POST' &&
+    isset($_GET['editar'])
+) {
+    $matricula = is_string($_GET['editar'])
+        ? $_GET['editar']
+        : '';
+
+    if (preg_match('/^\d{1,18}$/D', $matricula)) {
+        $alunoEdicao = $repository->consultarPorMatricula($matricula);
+
+        if ($alunoEdicao) {
+            $dados = $alunoEdicao;
+        } else {
+            $erro = ALUNO_NAO_ENCONTRADO;
+        }
+    } else {
+        $erro = 'Matrícula inválida.';
+    }
+}
+
+$turmas = $conn->query(
+    'SELECT codigo, curso, periodo, serie FROM turma ORDER BY codigo'
+)->fetch_all(MYSQLI_ASSOC);
+
+$cursosPorTurma = [];
+
+foreach ($turmas as $turma) {
+    $cursosPorTurma[$turma['codigo']] = $turma['curso'];
+}
+
+$pesquisa = is_string($_GET['nome'] ?? null)
+    ? trim($_GET['nome'])
+    : '';
+
+$resultado = $pesquisa !== ''
+    ? $repository->pesquisarPorNome($pesquisa)
+    : $repository->consultarAtivos();
+
+$alunos = $resultado->fetch_all(MYSQLI_ASSOC);
+
+foreach ($alunos as $indice => $aluno) {
+    $alunos[$indice]['curso'] =
+        $cursosPorTurma[$aluno['codigoTurma']] ?? '';
+}
+
+$mensagem = $_SESSION['mensagem_alunos'] ?? '';
+unset($_SESSION['mensagem_alunos']);
 ?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gerenciar alunos — HBL Control</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <style>
+        body {
+            background: #f5f5f5;
+        }
 
-      </div>
-      <div class="carousel_btn-box">
-        <a class="carousel-control-prev" href="#customCarousel2" role="button" data-slide="prev">
-          <i class="fa fa-angle-left" aria-hidden="true"></i>
-          <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#customCarousel2" role="button" data-slide="next">
-          <i class="fa fa-angle-right" aria-hidden="true"></i>
-          <span class="sr-only">Next</span>
-        </a>
-      </div>
+        main {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .painel {
+            background: white;
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 8px;
+        }
+
+        .campos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .botoes,
+        .pesquisa {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .tabela {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .acoes form {
+            display: inline-block;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <div class="painel">
+        <h1>Gerenciar alunos</h1>
+        <a href="funcoes.php">Voltar para a página inicial</a>
     </div>
-  </div>
-</section>
 
+    <?php if ($mensagem !== ''): ?>
+        <div class="alert alert-success" role="status">
+            <?= escapar($mensagem) ?>
+        </div>
+    <?php endif; ?>
 
-  <!-- footer section -->
-  
-  <script src="js/jquery-3.4.1.min.js"></script>
- 
-  <script src="js/bootstrap.js"></script>
- 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js" integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
+    <?php if ($erro !== ''): ?>
+        <div class="alert alert-danger" role="alert">
+            <?= escapar($erro) ?>
+        </div>
+    <?php endif; ?>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <section class="painel">
+        <h2><?= $alunoEdicao ? 'Editar aluno' : 'Cadastrar aluno' ?></h2>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+        <form action="aluno.php" method="post">
+            <input type="hidden" name="csrf"
+                   value="<?= escapar($_SESSION['csrf_alunos']) ?>">
+            <input type="hidden" name="acao"
+                   value="<?= $alunoEdicao ? 'atualizar' : 'cadastrar' ?>">
 
-  <script src="js/custom.js"></script></p>
+            <div class="campos">
+                <div>
+                    <label for="matricula">Matrícula</label>
+                    <input id="matricula" name="matricula" type="text"
+                           inputmode="numeric" pattern="\d{1,18}" maxlength="18"
+                           value="<?= escapar($dados['matricula']) ?>"
+                           <?= $alunoEdicao ? 'readonly' : '' ?> required>
+                </div>
 
-  
+                <div>
+                    <label for="nome">Nome completo</label>
+                    <input id="nome" name="nome" type="text" maxlength="100"
+                           value="<?= escapar($dados['nome']) ?>" required>
+                </div>
+
+                <div>
+                    <label for="datnasc">Data de nascimento</label>
+                    <input id="datnasc" name="datnasc" type="date"
+                           value="<?= escapar($dados['datnasc']) ?>" required>
+                </div>
+
+                <div>
+                    <label for="endereco">Endereço</label>
+                    <input id="endereco" name="endereco" type="text" maxlength="200"
+                           value="<?= escapar($dados['endereco']) ?>" required>
+                </div>
+
+                <div>
+                    <label for="sexo">Sexo</label>
+                    <select id="sexo" name="sexo" required>
+                        <option value="F"
+                            <?= $dados['sexo'] === 'F' ? 'selected' : '' ?>>
+                            Feminino
+                        </option>
+                        <option value="M"
+                            <?= $dados['sexo'] === 'M' ? 'selected' : '' ?>>
+                            Masculino
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="email">E-mail</label>
+                    <input id="email" name="email" type="email" maxlength="100"
+                           value="<?= escapar($dados['email']) ?>" required>
+                </div>
+
+                <div>
+                    <label for="situacao">Situação</label>
+                    <select id="situacao" name="situacao" required>
+                        <option value="ativo"
+                            <?= $dados['situacao'] === 'ativo' ? 'selected' : '' ?>>
+                            Ativo
+                        </option>
+                        <option value="inativo"
+                            <?= $dados['situacao'] === 'inativo' ? 'selected' : '' ?>>
+                            Inativo
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="codigoTurma">Turma</label>
+                    <select id="codigoTurma" name="codigoTurma" required>
+                        <option value="">Selecione uma turma</option>
+                        <?php foreach ($turmas as $turma): ?>
+                            <option value="<?= escapar($turma['codigo']) ?>"
+                                <?= (string) $dados['codigoTurma'] ===
+                                    (string) $turma['codigo'] ? 'selected' : '' ?>>
+                                <?= escapar($turma['codigo']) ?>
+                                — <?= escapar($turma['curso']) ?>
+                                — Série <?= escapar($turma['serie']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <div class="botoes">
+                <button type="submit" class="btn btn-success">
+                    <?= $alunoEdicao ? 'Salvar alterações' : 'Cadastrar aluno' ?>
+                </button>
+                <?php if ($alunoEdicao): ?>
+                    <a href="aluno.php" class="btn btn-secondary">
+                        Cancelar edição
+                    </a>
+                <?php endif; ?>
+            </div>
+        </form>
+    </section>
+
+    <section class="painel">
+        <h2>Alunos ativos</h2>
+
+        <form action="aluno.php" method="get" class="pesquisa">
+            <input type="text" name="nome"
+                   aria-label="Pesquisar aluno pelo nome"
+                   placeholder="Nome ou parte do nome"
+                   value="<?= escapar($pesquisa) ?>">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <a href="aluno.php" class="btn btn-secondary">Limpar</a>
+        </form>
+
+        <?php if (!$alunos): ?>
+            <p>Nenhum aluno encontrado.</p>
+        <?php else: ?>
+            <div class="tabela">
+                <table>
+                    <caption>Alunos ativos e suas respectivas turmas</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Matrícula</th>
+                            <th scope="col">Nome</th>
+                            <th scope="col">Dados pessoais</th>
+                            <th scope="col">Turma</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($alunos as $aluno): ?>
+                            <tr>
+                                <td><?= escapar($aluno['matricula']) ?></td>
+                                <td><?= escapar($aluno['nome']) ?></td>
+                                <td>
+                                    Nascimento: <?= escapar($aluno['datnasc']) ?><br>
+                                    Endereço: <?= escapar($aluno['endereco']) ?><br>
+                                    Sexo: <?= escapar($aluno['sexo']) ?><br>
+                                    E-mail: <?= escapar($aluno['email']) ?><br>
+                                    Situação: <?= escapar($aluno['situacao']) ?>
+                                </td>
+                                <td>
+                                    <?= escapar($aluno['codigoTurma']) ?>
+                                    — <?= escapar($aluno['curso']) ?>
+                                </td>
+                                <td class="acoes">
+                                    <a href="aluno.php?editar=<?= escapar($aluno['matricula']) ?>"
+                                       class="btn btn-primary">
+                                        Editar
+                                    </a>
+
+                                    <form action="aluno.php" method="post"
+                                          onsubmit="return confirm('Deseja inativar este aluno? O histórico será preservado.');">
+                                        <input type="hidden" name="csrf"
+                                               value="<?= escapar($_SESSION['csrf_alunos']) ?>">
+                                        <input type="hidden" name="acao" value="inativar">
+                                        <input type="hidden" name="matricula"
+                                               value="<?= escapar($aluno['matricula']) ?>">
+                                        <button type="submit" class="btn btn-danger">
+                                            Inativar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+</main>
 </body>
-
 </html>
