@@ -1,6 +1,6 @@
-# Organização das Iterações
+# Plano de Iterações Geral
 
-## 1. Objetivo
+# 1. Objetivo
 
 Este documento apresenta a organização prevista para o desenvolvimento do **Projeto PNLD — Controle de Livros Didáticos**, considerando a divisão das User Stories em iterações e a distribuição dos papéis entre os integrantes da equipe.
 
@@ -17,8 +17,9 @@ A distribuição busca promover a participação de todos os integrantes em dife
 * **Jaine Souza da Luz**
 
 ---
-
-# 3. Iteração 1
+# 3. Separação das Iterações por Unidade
+## UNIDADE I
+### Iteração 1
 
 A primeira iteração é composta pelas **US01, US02 e US03**.
 
@@ -38,10 +39,11 @@ A primeira iteração é composta pelas **US01, US02 e US03**.
 * Registro das evidências e resultados dos testes.
 * Análise de qualidade do código com SonarQube.
 * Criação e revisão dos Pull Requests correspondentes.
-
+* Ajustar SonarQube
+* Configurar Git Actions
 ---
-
-# 4. Iteração 2
+## UNIDADE II
+### Iteração 2
 
 A segunda iteração é composta pelas **US04, US05 e US06**.
 
@@ -63,8 +65,8 @@ A segunda iteração é composta pelas **US04, US05 e US06**.
 * Criação e revisão dos Pull Requests correspondentes.
 
 ---
-
-# 5. Iteração 3
+## UNIDADE III
+### Iteração 3
 
 A terceira iteração seguirá o mesmo modelo de organização, contemplando as User Stories seguintes à US06.
 
@@ -89,7 +91,7 @@ A terceira iteração seguirá o mesmo modelo de organização, contemplando as 
 
 ---
 
-# 6. Distribuição dos papéis
+# 4. Distribuição dos papéis
 
 A distribuição dos papéis é realizada de forma rotativa entre as User Stories, permitindo que os integrantes participem de diferentes etapas do processo de desenvolvimento.
 
@@ -113,7 +115,7 @@ Responsável por validar a funcionalidade de acordo com os critérios de aceita�
 
 ---
 
-# 7. Fluxo de trabalho
+# 5. Fluxo de trabalho
 
 Para cada User Story, será seguido, de forma geral, o seguinte fluxo:
 
@@ -141,7 +143,7 @@ O fluxo poderá ser ajustado conforme as necessidades de cada User Story e as at
 
 ---
 
-# 8. Estratégia de testes e qualidade
+# 6. Estratégia de testes e qualidade
 
 Durante as iterações, serão utilizados diferentes níveis de testes conforme a necessidade das funcionalidades:
 
@@ -154,7 +156,7 @@ Durante as iterações, serão utilizados diferentes níveis de testes conforme 
 
 ---
 
-# 9. Controle das entregas
+# 7. Controle das entregas
 
 Cada implementação deverá ser associada à respectiva User Story e registrada no controle de tarefas do projeto.
 
@@ -164,7 +166,7 @@ As evidências de testes, resultados de QA e demais informações relevantes dev
 
 ---
 
-# 10. Observação sobre o planejamento
+# 8. Observação sobre o planejamento
 
 A organização apresentada neste documento representa o planejamento inicial da equipe. A distribuição poderá ser ajustada caso ocorram mudanças nas User Stories, prioridades do projeto ou necessidades identificadas durante o desenvolvimento.
 

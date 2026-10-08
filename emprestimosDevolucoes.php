@@ -1,3 +1,13 @@
+<?php
+
+session_start();
+
+require_once 'php/auth.php';
+exigirAutenticacao();
+
+include 'php/conexao.php';
+
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -120,17 +130,14 @@
             </form>
           </div>
           <?php
-          // Incluir o arquivo de conexão
-          include 'php/conexao.php';
-
-          if (isset($_GET['titulo']) && !empty($_GET['titulo'])) {
+if (isset($_GET['titulo']) && !empty($_GET['titulo'])) {
             $titulo = $_GET['titulo'];
 
             // Consulta SQL para buscar os Emprestimos com o título informado
-            $sql = "SELECT emprestimo.*, livro.*, aluno.* FROM emprestimo, livro, aluno, devolucao WHERE emprestimo.codigo_livro=livro.codigo AND emprestimo.matricula_aluno=aluno.matricula AND emprestimo.codigo_emprestimo!=devolucao.codigo_emprestimo AND livro.titulo LIKE '%$titulo%'";
+            $sql = "SELECT emprestimo.*, livro.*, aluno.* FROM emprestimo INNER JOIN livro ON emprestimo.codigo_livro=livro.codigo INNER JOIN aluno ON emprestimo.matricula_aluno=aluno.matricula LEFT JOIN devolucao ON emprestimo.codigo_emprestimo=devolucao.codigo_emprestimo WHERE devolucao.codigo_emprestimo IS NULL AND livro.titulo LIKE '%$titulo%'";
           } else {
             // Se nenhum termo de pesquisa foi enviado, listar todos os Emprestimos disponíveis
-            $sql = "SELECT emprestimo.*, livro.*, aluno.* FROM emprestimo, livro, aluno, devolucao WHERE emprestimo.codigo_livro=livro.codigo AND emprestimo.matricula_aluno=aluno.matricula AND emprestimo.codigo_emprestimo!=devolucao.codigo_emprestimo";
+            $sql = "SELECT emprestimo.*, livro.*, aluno.* FROM emprestimo INNER JOIN livro ON emprestimo.codigo_livro=livro.codigo INNER JOIN aluno ON emprestimo.matricula_aluno=aluno.matricula LEFT JOIN devolucao ON emprestimo.codigo_emprestimo=devolucao.codigo_emprestimo WHERE devolucao.codigo_emprestimo IS NULL";
           }
 
           $result = $conn->query($sql);
