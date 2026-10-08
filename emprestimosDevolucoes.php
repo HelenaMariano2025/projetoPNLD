@@ -130,7 +130,7 @@ include 'php/conexao.php';
             </form>
           </div>
           <?php
-if (isset($_GET['titulo']) && !empty($_GET['titulo'])) {
+          if (isset($_GET['titulo']) && !empty($_GET['titulo'])) {
             $titulo = $_GET['titulo'];
 
             // Consulta SQL para buscar os Emprestimos com o título informado

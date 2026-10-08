@@ -38,4 +38,3 @@ function validarIdLivro($idLivro)
 {
     return !empty($idLivro);
 }
-
