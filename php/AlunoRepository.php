@@ -11,7 +11,7 @@ class AlunoRepository
 
     public function inserir($matricula, $nome, $datnasc, $endereco, $sexo, $email, $situacao, $codigoTurma)
     {
-        $sql = "INSERT INTO aluno 
+        $sql = "INSERT INTO aluno
                 (matricula, nome, datnasc, endereco, sexo, email, situacao, codigoTurma)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -36,9 +36,18 @@ class AlunoRepository
     {
         $sql = "SELECT * FROM aluno WHERE situacao = 'ativo'";
 
-        $result = $this->conn->query($sql);
+        return $this->conn->query($sql);
+    }
 
-        return $result;
+    public function consultarPorMatricula($matricula)
+    {
+        $sql = "SELECT * FROM aluno WHERE matricula = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $matricula);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_assoc();
     }
 
     public function atualizar($matricula, $nome, $datnasc, $endereco, $sexo, $email, $situacao, $codigoTurma)
@@ -77,9 +86,27 @@ class AlunoRepository
                 WHERE matricula = ?";
 
         $stmt = $this->conn->prepare($sql);
-
         $stmt->bind_param("i", $matricula);
 
         return $stmt->execute();
+    }
+
+    public function pesquisarPorNome($nome)
+    {
+        $sql = "SELECT * FROM aluno
+                WHERE situacao = 'ativo'
+                AND nome LIKE ? ESCAPE '!'
+                ORDER BY nome";
+
+        $termo = '%' . strtr(
+            $nome,
+            ['!' => '!!', '%' => '!%', '_' => '!_']
+        ) . '%';
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $termo);
+        $stmt->execute();
+
+        return $stmt->get_result();
     }
 }
