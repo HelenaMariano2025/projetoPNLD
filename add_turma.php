@@ -1,23 +1,59 @@
 <?php
-session_start(); // Inicia a sessão
+session_start();
 
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $codigo = $_POST['codigo'];
-    $curso = $_POST['curso'];
-    $siglaCurso = $_POST['siglaCurso'];
-    $periodo = $_POST['periodo'];
-    $serie = $_POST['serie'];
-    $matrizCurricular = $_POST['matrizCurricular'];
-    $situacao = $_POST['situacao'];
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $codigo = (int) ($_POST['codigo'] ?? 0);
+    $curso = trim($_POST['curso'] ?? '');
+    $siglaCurso = trim($_POST['siglaCurso'] ?? '');
+    $periodo = (int) ($_POST['periodo'] ?? 0);
+    $serie = (int) ($_POST['serie'] ?? 0);
+    $matrizCurricular = trim($_POST['matrizCurricular'] ?? '');
+    $situacao = $_POST['situacao'] ?? 'ativo';
 
-    $sql = "INSERT INTO turma (codigo, curso, siglaCurso, periodo, serie, matrizCurricular, situacao) VALUES ('$codigo','$curso', '$siglaCurso', $periodo, $serie, '$matrizCurricular', '$situacao')";
-
-    if ($conn->query($sql) === TRUE) {
-      $_SESSION['mensagem'] = "Nova turma adicionada com sucesso!";
+    if (
+        $codigo <= 0 ||
+        $curso === '' ||
+        $periodo <= 0 ||
+        $serie <= 0 ||
+        !in_array($situacao, ['ativo', 'inativo'], true)
+    ) {
+        $_SESSION['mensagem'] = 'Preencha os campos obrigatórios com valores válidos.';
     } else {
-      $_SESSION['mensagem'] = "Erro ao adicionar nova turma: " . $conn->error;
+        try {
+            $sql = "INSERT INTO turma
+                (codigo, curso, siglaCurso, periodo, serie, matrizCurricular, situacao)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+            $stmt = $conn->prepare($sql);
+
+            $stmt->bind_param(
+                "issiiss",
+                $codigo,
+                $curso,
+                $siglaCurso,
+                $periodo,
+                $serie,
+                $matrizCurricular,
+                $situacao
+            );
+
+            $stmt->execute();
+
+            $_SESSION['mensagem'] = 'Turma cadastrada com sucesso!';
+            $stmt->close();
+        } catch (mysqli_sql_exception $e) {
+            if ((int) $e->getCode() === 1062) {
+                $_SESSION['mensagem'] =
+                    'Já existe uma turma cadastrada com esse código.';
+            } else {
+                error_log($e->getMessage());
+
+                $_SESSION['mensagem'] =
+                    'Não foi possível cadastrar a turma. Tente novamente.';
+            }
+        }
     }
 
     $conn->close();
