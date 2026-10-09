@@ -181,10 +181,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
           <div class="form_container">
             <!-- Exibe a mensagem de sucesso ou erro -->
             <?php
-            if (isset($_SESSION['mensagem'])) {
-                echo "<p>" . $_SESSION['mensagem'] . "</p>";
-                unset($_SESSION['mensagem']); // Remove a mensagem depois de exibir
-            }
+              if (isset($_SESSION['mensagem'])) {
+                  echo '<div class="alert alert-info" role="alert">';
+                  echo htmlspecialchars($_SESSION['mensagem'], ENT_QUOTES, 'UTF-8');
+                  echo '</div>';
+
+                  unset($_SESSION['mensagem']);
+              }
             ?>
             <form action="add_turma.php" method="post">
               <div>
