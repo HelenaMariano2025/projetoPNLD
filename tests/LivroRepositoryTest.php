@@ -68,6 +68,32 @@ class LivroRepositoryTest extends TestCase
         $this->assertSame($resultadoEsperado, $resultado);
     }
 
+    public function testConsultarAcervoSemFiltrarSituacaoOuEstoque(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with('SELECT * FROM livro ORDER BY titulo, codigo')
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarTodos()
+        );
+    }
+
     public function testAtualizarLivro(): void
     {
         $stmt = $this->createMock(mysqli_stmt::class);
