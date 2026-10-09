@@ -132,4 +132,39 @@ class TurmaRepositoryTest extends TestCase
 
         $this->assertTrue($resultado);
     }
+
+
+    
+    public function testPesquisarTurmasPorCurso()
+    {
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $resultadoMock = $this->createMock(mysqli_result::class);
+
+        $stmt->expects($this->once())
+            ->method('bind_param')
+            ->with('ss', 'ativo', '%Informatica%');
+
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoMock);
+
+        $conn = $this->createMock(mysqli::class);
+
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with(
+                'SELECT * FROM turma WHERE situacao = ? AND curso LIKE ?'
+            )
+            ->willReturn($stmt);
+
+        $repository = new TurmaRepository($conn);
+
+        $resultado = $repository->pesquisarPorCurso('Informatica');
+
+        $this->assertSame($resultadoMock, $resultado);
+    }
 }
