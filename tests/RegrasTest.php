@@ -32,4 +32,11 @@ class RegrasTest extends TestCase
 
         $this->assertEquals('2026-10-07', $resultado);
     }
+
+    public function testDataDevolucaoAoVirarOAno()
+    {
+        $resultado = calcularDataDevolucao('2026-12-20');
+
+        $this->assertEquals('2027-01-09', $resultado);
+    }
 }

@@ -33,54 +33,120 @@ class EmprestimoRepositoryTest extends TestCase
     {
         $isbn = 9999999999999;
         $matriculaAluno = 20212021;
-        $matriculaAdministrador = 20250101;
+        $matriculaAdministrador = 1234567890;
+        $codigoTurma = 99999;
 
-        // Cria livro temporário para o teste.
-        $sqlLivro = "INSERT INTO livro
-            (isbn, titulo, autor, codigo_editora, ano, situacao, edicao, qtde_disponivel)
-            VALUES
-            ($isbn, 'Livro de Teste', 'Autor de Teste', 1, 2026, 'ativo', 1, 1)";
+        $codigoLivro = null;
+        $codigoEmprestimo = null;
 
-        $this->assertTrue($this->conn->query($sqlLivro));
+        try {
+            $stmtTurma = $this->conn->prepare(
+                "INSERT INTO turma (codigo, curso, periodo, serie)
+                 VALUES (?, 'Teste', 1, 1)"
+            );
 
-        $codigoLivro = $this->conn->insert_id;
+            $stmtTurma->bind_param('i', $codigoTurma);
+            $this->assertTrue($stmtTurma->execute());
+            $stmtTurma->close();
 
-        // Cria empréstimo temporário.
-        $sqlEmprestimo = "INSERT INTO emprestimo
-            (codigo_livro, dataEmprestimo, dataDevolucao, matricula_aluno, adm_responsavel)
-            VALUES
-            ($codigoLivro, '2026-10-01', '2026-10-21', $matriculaAluno, $matriculaAdministrador)";
+            $stmtAluno = $this->conn->prepare(
+                "INSERT INTO aluno
+                 (matricula, nome, email, codigoTurma)
+                 VALUES (?, 'Aluno de Teste', 'teste@example.com', ?)"
+            );
 
-        $this->assertTrue($this->conn->query($sqlEmprestimo));
+            $stmtAluno->bind_param(
+                'ii',
+                $matriculaAluno,
+                $codigoTurma
+            );
 
-        $codigoEmprestimo = $this->conn->insert_id;
+            $this->assertTrue($stmtAluno->execute());
+            $stmtAluno->close();
 
-        $repository = new EmprestimoRepository($this->conn);
+            $stmtLivro = $this->conn->prepare(
+                "INSERT INTO livro
+                 (isbn, titulo, autor, codigo_editora, ano, situacao, edicao, qtde_disponivel)
+                 VALUES (?, 'Livro de Teste', 'Autor de Teste', 1, 2026, 'ativo', 1, 1)"
+            );
 
-        $primeiraDevolucao = $repository->registrarDevolucao(
-            $codigoEmprestimo,
-            '2026-10-01'
-        );
+            $stmtLivro->bind_param('i', $isbn);
+            $this->assertTrue($stmtLivro->execute());
 
-        $segundaDevolucao = $repository->registrarDevolucao(
-            $codigoEmprestimo,
-            '2026-10-01'
-        );
+            $codigoLivro = $this->conn->insert_id;
+            $stmtLivro->close();
 
-        $this->assertTrue($primeiraDevolucao);
-        $this->assertFalse($segundaDevolucao);
+            $stmtEmprestimo = $this->conn->prepare(
+                "INSERT INTO emprestimo
+                 (codigo_livro, dataEmprestimo, dataDevolucao, matricula_aluno, adm_responsavel)
+                 VALUES (?, '2026-10-01', '2026-10-21', ?, ?)"
+            );
 
-        // Limpeza dos dados criados pelo teste.
-        $this->conn->query(
-            "DELETE FROM devolucao WHERE codigo_emprestimo = $codigoEmprestimo"
-        );
+            $stmtEmprestimo->bind_param(
+                'iii',
+                $codigoLivro,
+                $matriculaAluno,
+                $matriculaAdministrador
+            );
 
-        $this->conn->query(
-            "DELETE FROM emprestimo WHERE codigo_emprestimo = $codigoEmprestimo"
-        );
+            $this->assertTrue($stmtEmprestimo->execute());
 
-        $this->conn->query(
-            "DELETE FROM livro WHERE codigo = $codigoLivro"
-        );
+            $codigoEmprestimo = $this->conn->insert_id;
+            $stmtEmprestimo->close();
+
+            $repository = new EmprestimoRepository($this->conn);
+
+            $primeiraDevolucao = $repository->registrarDevolucao(
+                $codigoEmprestimo,
+                '2026-10-21'
+            );
+
+            $segundaDevolucao = $repository->registrarDevolucao(
+                $codigoEmprestimo,
+                '2026-10-21'
+            );
+
+            $this->assertTrue($primeiraDevolucao);
+            $this->assertFalse($segundaDevolucao);
+        } finally {
+            if ($codigoEmprestimo !== null) {
+                $stmt = $this->conn->prepare(
+                    'DELETE FROM devolucao WHERE codigo_emprestimo = ?'
+                );
+                $stmt->bind_param('i', $codigoEmprestimo);
+                $stmt->execute();
+                $stmt->close();
+
+                $stmt = $this->conn->prepare(
+                    'DELETE FROM emprestimo WHERE codigo_emprestimo = ?'
+                );
+                $stmt->bind_param('i', $codigoEmprestimo);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            if ($codigoLivro !== null) {
+                $stmt = $this->conn->prepare(
+                    'DELETE FROM livro WHERE codigo = ?'
+                );
+                $stmt->bind_param('i', $codigoLivro);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            $stmt = $this->conn->prepare(
+                'DELETE FROM aluno WHERE matricula = ?'
+            );
+            $stmt->bind_param('i', $matriculaAluno);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $this->conn->prepare(
+                'DELETE FROM turma WHERE codigo = ?'
+            );
+            $stmt->bind_param('i', $codigoTurma);
+            $stmt->execute();
+            $stmt->close();
+        }
     }
 }
