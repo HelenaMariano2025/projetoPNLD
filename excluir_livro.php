@@ -1,6 +1,12 @@
 <?php
 
+session_start();
+
+require_once __DIR__ . '/php/auth.php';
+exigirAutenticacao();
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Allow: POST');
     http_response_code(405);
     exit('Método não permitido.');
 }
@@ -24,5 +30,9 @@ try {
     $conn->close();
 }
 
-header('Location: livros.php?exclusao=' . ($excluiu ? 'sucesso' : 'erro'));
+header(
+    'Location: livros.php?exclusao=' . ($excluiu ? 'sucesso' : 'erro'),
+    true,
+    303
+);
 exit;
