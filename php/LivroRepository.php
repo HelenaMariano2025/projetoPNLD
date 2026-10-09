@@ -119,9 +119,30 @@ class LivroRepository
 
     public function excluir(int $codigo): bool
     {
-        $sql = "UPDATE livro SET situacao = 'inativo' WHERE codigo = ?";
+        $stmt = $this->conn->prepare(
+            'SELECT COUNT(*) AS total FROM emprestimo WHERE codigo_livro = ?'
+        );
+        $stmt->bind_param('i', $codigo);
 
-        $stmt = $this->conn->prepare($sql);
+        if (!$stmt->execute()) {
+            return false;
+        }
+
+        $resultado = $stmt->get_result();
+
+        if ($resultado === false) {
+            return false;
+        }
+
+        $vinculos = $resultado->fetch_assoc();
+
+        if ($vinculos === null || (int) $vinculos['total'] > 0) {
+            return false;
+        }
+
+        $stmt = $this->conn->prepare(
+            'DELETE FROM livro WHERE codigo = ?'
+        );
         $stmt->bind_param('i', $codigo);
 
         return $stmt->execute();
