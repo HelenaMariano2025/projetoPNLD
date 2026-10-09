@@ -2,204 +2,219 @@
 
 session_start();
 
-require_once __DIR__ . '/php/conexao.php';
-require_once __DIR__ . '/php/LivroRepository.php';
+require_once __DIR__ . '/php/auth.php';
+exigirAutenticacao();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $repository = new LivroRepository($conn);
+require_once __DIR__ . '/php/LivroValidator.php';
 
-    try {
-        $cadastrado = $repository->inserir(
-            (string) $_POST['isbn'],
-            (string) $_POST['titulo'],
-            (string) $_POST['autor'],
-            (int) $_POST['codigo_editora'],
-            (int) $_POST['ano'],
-            (string) $_POST['situacao'],
-            (int) $_POST['edicao'],
-            (int) $_POST['qtde_disponivel']
-        );
-
-        $_SESSION['mensagem'] = $cadastrado
-            ? 'Novo livro adicionado com sucesso!'
-            : 'Erro ao adicionar novo livro.';
-    } catch (mysqli_sql_exception $erro) {
-        $_SESSION['mensagem'] = 'Erro ao adicionar novo livro.';
-    }
-
-    $conn->close();
+function escapar($valor): string
+{
+    return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
 }
 
-?>
+$dados = [
+    'isbn' => '',
+    'titulo' => '',
+    'autor' => '',
+    'codigo_editora' => '',
+    'ano' => '',
+    'situacao' => 'ativo',
+    'edicao' => '',
+    'qtde_disponivel' => '',
+];
 
-<!DOCTYPE html>
-<html>
+$mensagem = $_SESSION['mensagem_livro'] ?? '';
+unset($_SESSION['mensagem_livro']);
 
-<head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    foreach ($dados as $campo => $valor) {
+        $entrada = $_POST[$campo] ?? '';
+        $dados[$campo] = is_string($entrada) ? trim($entrada) : '';
+    }
 
-  <title>Adicionar Livro</title>
-  
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
+    $erroValidacao = LivroValidator::validar($dados);
 
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+    if ($erroValidacao !== null) {
+        $mensagem = $erroValidacao;
+    } else {
+        require_once __DIR__ . '/php/conexao.php';
+        require_once __DIR__ . '/php/LivroRepository.php';
 
-  <!-- fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+        $cadastrado = false;
 
-  <!--owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+        try {
+            $repository = new LivroRepository($conn);
+            $cadastrado = $repository->inserir(
+                $dados['isbn'],
+                $dados['titulo'],
+                $dados['autor'],
+                (int) $dados['codigo_editora'],
+                (int) $dados['ano'],
+                $dados['situacao'],
+                (int) $dados['edicao'],
+                (int) $dados['qtde_disponivel']
+            );
 
-  <!-- font awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
-
-</head>
-
-<body class="sub_page">
-
-  <div class="hero_area">
-    <!-- header section strats -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" >
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
-            </a>
-
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav  ">
-                  <li class="nav-item ">
-                    <a class="nav-link" href="funcoes.php">HOME<span class="sr-only">(current)</span></a>
-                  </li>
-                  <li class="nav-item ">
-                    <a class="nav-link" href="livros.php">VOLTAR<span class="sr-only">(current)</span></a>
-                  </li>
-                 
-                </ul>
-              </div>
-              <div class="quote_btn-container">
-              </div>
-            </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-    <!-- end header section -->
-  </div>
-
-
-  <!-- contact section -->
-  <section class="contact_section layout_padding-bottom">
-    <div class="container">
-      <div class="heading_container">
-        <h2><br/>
-          ADICIONAR LIVRO
-        </h2>
-      </div>
-      <div class="row">
-        <div class="col-md-7">
-          <div class="form_container">
-            <!-- Exibe a mensagem de sucesso ou erro -->
-            <?php
-            if (isset($_SESSION['mensagem'])) {
-                echo "<p>" . $_SESSION['mensagem'] . "</p>";
-                unset($_SESSION['mensagem']); // Remove a mensagem depois de exibir
+            if (!$cadastrado) {
+                $mensagem = 'Não foi possível cadastrar o livro.';
             }
-            ?>
-            <form action="add_livro.php" method="post">
-              <div>
-                <input type="text" name="isbn" placeholder="ISBN" required />
-              </div>
-              <div>
-                  <input type="text" name="titulo" placeholder="Título" required />
-              </div>
-              <div>
-                  <input type="text" name="autor" placeholder="Autor" required />
-              </div>
-              <div>
-                  <input type="number" name="codigo_editora" placeholder="Código da Editora" required />
-              </div>
-              <div>
-                  <input type="number" name="ano" placeholder="Ano" required />
-              </div>
-              <div>
-                  <select name="situacao" required>
-                      <option value="ativo">Ativo</option>
-                      <option value="inativo">Inativo</option>
-                  </select>
-              </div>
-              <div>
-                  <input type="number" name="edicao" placeholder="Edição" required />
-              </div>
-              <div>
-                  <input type="number" name="qtde_disponivel" placeholder="Quantidade Disponível" required />
-              </div>
-              <div class="btn_box">
-                <button type="submit">
-                  adicionar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="col-md-5">
-          <div class="img-box">
-            <img src="images/.png" alt="">
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- end contact section -->
+        } catch (mysqli_sql_exception $erro) {
+            $mensagem = 'Não foi possível cadastrar o livro. Verifique se o ISBN já está cadastrado.';
+        } finally {
+            $conn->close();
+        }
 
- 
+        if ($cadastrado) {
+            $_SESSION['mensagem_livro'] = 'Novo livro adicionado com sucesso!';
+            header('Location: add_livro.php', true, 303);
+            exit;
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adicionar livro</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+</head>
+<body>
+    <main class="container py-5">
+        <h1>Adicionar livro</h1>
+        <p><a href="livros.php">Voltar para livros</a></p>
+
+        <?php if ($mensagem !== ''): ?>
+            <p class="alert alert-info" role="status">
+                <?= escapar($mensagem) ?>
+            </p>
+        <?php endif; ?>
+
+        <form action="add_livro.php" method="post">
+            <div class="form-group">
+                <label for="isbn">ISBN</label>
+                <input
+                    class="form-control"
+                    type="text"
+                    id="isbn"
+                    name="isbn"
+                    inputmode="numeric"
+                    value="<?= escapar($dados['isbn']) ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="titulo">Título</label>
+                <input
+                    class="form-control"
+                    type="text"
+                    id="titulo"
+                    name="titulo"
+                    maxlength="100"
+                    value="<?= escapar($dados['titulo']) ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="autor">Autor</label>
+                <input
+                    class="form-control"
+                    type="text"
+                    id="autor"
+                    name="autor"
+                    maxlength="100"
+                    value="<?= escapar($dados['autor']) ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="codigo_editora">Código da editora</label>
+                <input
+                    class="form-control"
+                    type="number"
+                    id="codigo_editora"
+                    name="codigo_editora"
+                    min="1"
+                    max="2147483647"
+                    value="<?= escapar($dados['codigo_editora']) ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="ano">Ano</label>
+                <input
+                    class="form-control"
+                    type="number"
+                    id="ano"
+                    name="ano"
+                    min="1"
+                    max="2147483647"
+                    value="<?= escapar($dados['ano']) ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="situacao">Situação</label>
+                <select
+                    class="form-control"
+                    id="situacao"
+                    name="situacao"
+                    required
+                >
+                    <option value="">Selecione</option>
+                    <option
+                        value="ativo"
+                        <?= $dados['situacao'] === 'ativo' ? 'selected' : '' ?>
+                    >
+                        Ativo
+                    </option>
+                    <option
+                        value="inativo"
+                        <?= $dados['situacao'] === 'inativo' ? 'selected' : '' ?>
+                    >
+                        Inativo
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="edicao">Edição</label>
+                <input
+                    class="form-control"
+                    type="number"
+                    id="edicao"
+                    name="edicao"
+                    min="1"
+                    max="2147483647"
+                    value="<?= escapar($dados['edicao']) ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="qtde_disponivel">Quantidade disponível</label>
+                <input
+                    class="form-control"
+                    type="number"
+                    id="qtde_disponivel"
+                    name="qtde_disponivel"
+                    min="0"
+                    max="2147483647"
+                    value="<?= escapar($dados['qtde_disponivel']) ?>"
+                    required
+                >
+            </div>
+
+            <button class="btn btn-primary" type="submit">
+                Adicionar livro
+            </button>
+        </form>
+    </main>
+</body>
+</html>

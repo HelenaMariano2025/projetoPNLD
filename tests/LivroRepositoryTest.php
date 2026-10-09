@@ -23,7 +23,7 @@ class LivroRepositoryTest extends TestCase
 
         $repository = new LivroRepository($conn);
 
-        $resultado = $repository->inserir(
+        $this->assertTrue($repository->inserir(
             '9788535914849',
             'Livro de teste',
             'Autora de teste',
@@ -32,9 +32,7 @@ class LivroRepositoryTest extends TestCase
             'ativo',
             1,
             5
-        );
-
-        $this->assertTrue($resultado);
+        ));
     }
 
     public function testConsultarLivrosDisponiveisPorTitulo(): void
@@ -63,9 +61,36 @@ class LivroRepositoryTest extends TestCase
 
         $repository = new LivroRepository($conn);
 
-        $resultado = $repository->consultarDisponiveis('Química');
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarDisponiveis('Química')
+        );
+    }
 
-        $this->assertSame($resultadoEsperado, $resultado);
+    public function testConsultarAcervoSemFiltrarSituacaoOuEstoque(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with('SELECT * FROM livro ORDER BY titulo, codigo')
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarTodos()
+        );
     }
 
     public function testAtualizarLivro(): void
@@ -102,7 +127,7 @@ class LivroRepositoryTest extends TestCase
 
         $repository = new LivroRepository($conn);
 
-        $resultado = $repository->atualizar(
+        $this->assertTrue($repository->atualizar(
             42,
             '9788535914849',
             'Título atualizado',
@@ -112,29 +137,56 @@ class LivroRepositoryTest extends TestCase
             'ativo',
             2,
             8
-        );
-
-        $this->assertTrue($resultado);
+        ));
     }
 
-    public function testExcluirLivroPreservandoHistorico(): void
+    public function testExcluirLivroSemVinculos(): void
     {
-        $stmt = $this->createMock(mysqli_stmt::class);
-        $stmt->expects($this->once())
+        $resultado = $this->createMock(mysqli_result::class);
+        $resultado->expects($this->once())
+            ->method('fetch_assoc')
+            ->willReturn(['total' => '0']);
+
+        $consulta = $this->createMock(mysqli_stmt::class);
+        $consulta->expects($this->once())
             ->method('bind_param')
             ->with('i', 42)
             ->willReturn(true);
-        $stmt->expects($this->once())
+        $consulta->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $consulta->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultado);
+
+        $exclusao = $this->createMock(mysqli_stmt::class);
+        $exclusao->expects($this->once())
+            ->method('bind_param')
+            ->with('i', 42)
+            ->willReturn(true);
+        $exclusao->expects($this->once())
             ->method('execute')
             ->willReturn(true);
 
         $conn = $this->createMock(mysqli::class);
-        $conn->expects($this->once())
+        $conn->expects($this->exactly(2))
             ->method('prepare')
-            ->with(
-                "UPDATE livro SET situacao = 'inativo' WHERE codigo = ?"
-            )
-            ->willReturn($stmt);
+            ->willReturnCallback(
+                function (string $sql) use ($consulta, $exclusao): mysqli_stmt {
+                    if (
+                        $sql === 'SELECT COUNT(*) AS total FROM emprestimo WHERE codigo_livro = ?'
+                    ) {
+                        return $consulta;
+                    }
+
+                    $this->assertSame(
+                        'DELETE FROM livro WHERE codigo = ?',
+                        $sql
+                    );
+
+                    return $exclusao;
+                }
+            );
 
         $repository = new LivroRepository($conn);
 

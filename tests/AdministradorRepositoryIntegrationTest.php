@@ -6,36 +6,42 @@ require_once __DIR__ . '/../php/AdministradorRepository.php';
 
 class AdministradorRepositoryIntegrationTest extends TestCase
 {
-    private mysqli $conn;
-
-    protected function setUp(): void
+    public function testBuscaAdministradorCadastradoNoBanco(): void
     {
-        $this->conn = new mysqli(
-            getenv('DB_HOST'),
-            getenv('DB_USER'),
-            getenv('DB_PASSWORD'),
-            getenv('DB_NAME')
+        $conn = new mysqli(
+            getenv('DB_HOST') ?: 'localhost',
+            getenv('DB_USER') ?: 'pnld',
+            getenv('DB_PASSWORD') ?: '123456',
+            getenv('DB_NAME') ?: 'SistemaHBL'
         );
 
-        if ($this->conn->connect_error) {
-            $this->fail(
-                'Falha na conexão com o banco: ' . $this->conn->connect_error
+        $conn->begin_transaction();
+
+        try {
+            $matricula = random_int(100000000000, 999999999999);
+            $nome = 'Administrador de teste';
+            $senha = 'senhaTeste123';
+
+            $stmt = $conn->prepare(
+                'INSERT INTO administrador (matricula, nome, senha)
+                 VALUES (?, ?, ?)'
             );
+            $stmt->bind_param('iss', $matricula, $nome, $senha);
+
+            $this->assertTrue($stmt->execute());
+            $stmt->close();
+
+            $repository = new AdministradorRepository($conn);
+            $administrador = $repository->buscarPorMatricula($matricula);
+
+            $this->assertNotNull($administrador);
+            $this->assertSame(
+                $matricula,
+                (int) $administrador['matricula']
+            );
+        } finally {
+            $conn->rollback();
+            $conn->close();
         }
-    }
-
-    protected function tearDown(): void
-    {
-        $this->conn->close();
-    }
-
-    public function testBuscaAdministradorCadastradoNoBanco()
-    {
-        $repository = new AdministradorRepository($this->conn);
-
-        $administrador = $repository->buscarPorMatricula(20250101);
-
-        $this->assertNotNull($administrador);
-        $this->assertSame(20250101, (int) $administrador['matricula']);
     }
 }
