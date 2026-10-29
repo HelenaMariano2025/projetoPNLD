@@ -1,3 +1,26 @@
+<?php
+session_start();
+
+require_once 'php/auth.php';
+exigirAutenticacao();
+
+require_once 'php/conexao.php';
+require_once 'php/TurmaRepository.php';
+
+$repository = new TurmaRepository($conn);
+
+$curso = trim($_GET['curso'] ?? '');
+
+
+if ($curso !== '') {
+    $result = $repository->pesquisarPorCurso($curso);
+} else {
+    $result = $repository->consultarAtivos();
+}
+
+$mensagem = $_SESSION['mensagem'] ?? '';
+unset($_SESSION['mensagem']);
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -41,6 +64,14 @@
 </head>
 
 <body class="sub_page">
+  
+  <?php if ($mensagem !== ''): ?>
+      <div class="container mt-3">
+          <div class="alert alert-info" role="alert">
+              <?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?>
+          </div>
+      </div>
+  <?php endif; ?>
 
   <div class="hero_area">
     <!-- header section starts -->
@@ -119,53 +150,53 @@
     <button type="submit">Buscar</button>
 </form>
 </div>
+
 <?php
 
-session_start();
-
-require_once 'php/auth.php';
-exigirAutenticacao();
-
-// Incluir o arquivo de conexão
-include 'php/conexao.php';
-
-if (isset($_GET['curso']) && !empty($_GET['curso'])) {
-    $curso = $_GET['curso'];
-
-    // Consulta SQL para buscar as turmas com o curso informado
-    $sql = "SELECT * FROM turma WHERE situacao = 'ativo' AND curso LIKE '%$curso%'";
-} else {
-    // Se nenhum termo de pesquisa foi enviado, listar todas as turmas disponíveis
-    $sql = "SELECT * FROM turma WHERE situacao = 'ativo'";
-}
-
-$result = $conn->query($sql);
-
-if ($result->num_rows > 0) {
+if ($result && $result->num_rows > 0) {
     $count = 0;
-    // Exibe cada turma disponível
+
     while ($row = $result->fetch_assoc()) {
-        // Define a classe 'active' para o primeiro item do carousel
-        $active_class = ($count == 0) ? 'active' : '';
+        $active_class = ($count === 0) ? 'active' : '';
+
         echo "<div class='carousel-item $active_class'>";
         echo "<div class='box'>";
         echo "<div class='client_info'>";
         echo "<div class='client_name'>";
-        echo "<h5>" . $row["codigo"] . "</h5>";
-        echo "<h6>" . $row["curso"] . " (" . $row["siglaCurso"] . ")</h6>";
+        echo "<h5>" . htmlspecialchars((string) $row['codigo'], ENT_QUOTES, 'UTF-8') . "</h5>";
+        echo "<h6>" . htmlspecialchars($row['curso'], ENT_QUOTES, 'UTF-8') .
+             " (" . htmlspecialchars($row['siglaCurso'], ENT_QUOTES, 'UTF-8') . ")</h6>";
         echo "</div>";
         echo "</div>";
-        echo "<p>Período: " . $row["periodo"] . ", Série: " . $row["serie"] . "</p>";
-        echo "<p>Matriz Curricular: " . $row["matrizCurricular"] . "</p>";
-        echo "</div>";
-        echo "</div>";
-        $count++;
+        echo "<p>Período: " . htmlspecialchars((string) $row['periodo'], ENT_QUOTES, 'UTF-8') .
+             ", Série: " . htmlspecialchars((string) $row['serie'], ENT_QUOTES, 'UTF-8') . "</p>";
+        echo "<p>Matriz Curricular: " .
+             htmlspecialchars($row['matrizCurricular'] ?? '', ENT_QUOTES, 'UTF-8') . "</p>";
+             $codigoTurma = (int) $row['codigo'];
+
+            echo "<div class='mt-3'>";
+            echo "<a class='btn btn-primary btn-sm me-2' href='editar_turma.php?codigo=" .
+                $codigoTurma . "'>Editar</a>";
+
+            echo "<a class='btn btn-danger btn-sm' href='excluir_turma.php?codigo=" .
+                $codigoTurma .
+                "' onclick=\"return confirm('Tem certeza de que deseja excluir esta turma?')\">Excluir</a>";
+            echo "</div>";
+            echo "</div>";
+            echo "</div>";
+
+            $count++;
     }
 } else {
-    // Se não houver turmas disponíveis, exibe uma mensagem
     echo "<div class='carousel-item active'>";
     echo "<div class='box'>";
-    echo "<p>Nenhuma turma disponível no momento.</p>";
+
+    if ($curso !== '') {
+        echo "<p>Nenhuma turma encontrada para o curso pesquisado.</p>";
+    } else {
+        echo "<p>Nenhuma turma disponível no momento.</p>";
+    }
+
     echo "</div>";
     echo "</div>";
 }
