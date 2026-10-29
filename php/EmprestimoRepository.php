@@ -15,60 +15,65 @@ class EmprestimoRepository
     ): bool {
         $this->conn->begin_transaction();
 
-        $sqlLivro = 'UPDATE livro
-                     SET qtde_disponivel = qtde_disponivel - 1
-                     WHERE codigo = ? AND qtde_disponivel > 0';
+        try {
+            $sqlLivro = 'UPDATE livro
+                         SET qtde_disponivel = qtde_disponivel - 1
+                         WHERE codigo = ? AND qtde_disponivel > 0';
 
-        $stmtLivro = $this->conn->prepare($sqlLivro);
+            $stmtLivro = $this->conn->prepare($sqlLivro);
 
-        if ($stmtLivro === false) {
-            $this->conn->rollback();
-            return false;
-        }
+            if ($stmtLivro === false) {
+                $this->conn->rollback();
+                return false;
+            }
 
-        $stmtLivro->bind_param('i', $codigoLivro);
-        $stmtLivro->execute();
+            $stmtLivro->bind_param('i', $codigoLivro);
+            $stmtLivro->execute();
 
-        if ($stmtLivro->affected_rows !== 1) {
+            if ($stmtLivro->affected_rows !== 1) {
+                $stmtLivro->close();
+                $this->conn->rollback();
+                return false;
+            }
+
             $stmtLivro->close();
+
+            $sqlEmprestimo = 'INSERT INTO emprestimo
+                    (codigo_livro, dataEmprestimo, dataDevolucao, matricula_aluno, adm_responsavel)
+                    VALUES (?, ?, ?, ?, ?)';
+
+            $stmtEmprestimo = $this->conn->prepare($sqlEmprestimo);
+
+            if ($stmtEmprestimo === false) {
+                $this->conn->rollback();
+                return false;
+            }
+
+            $stmtEmprestimo->bind_param(
+                'issii',
+                $codigoLivro,
+                $dataEmprestimo,
+                $dataDevolucao,
+                $matriculaAluno,
+                $matriculaAdministrador
+            );
+
+            $resultado = $stmtEmprestimo->execute();
+
+            $stmtEmprestimo->close();
+
+            if (!$resultado) {
+                $this->conn->rollback();
+                return false;
+            }
+
+            $this->conn->commit();
+
+            return true;
+        } catch (\mysqli_sql_exception $e) {
             $this->conn->rollback();
             return false;
         }
-
-        $stmtLivro->close();
-
-        $sqlEmprestimo = 'INSERT INTO emprestimo
-                (codigo_livro, dataEmprestimo, dataDevolucao, matricula_aluno, adm_responsavel)
-                VALUES (?, ?, ?, ?, ?)';
-
-        $stmtEmprestimo = $this->conn->prepare($sqlEmprestimo);
-
-        if ($stmtEmprestimo === false) {
-            $this->conn->rollback();
-            return false;
-        }
-
-        $stmtEmprestimo->bind_param(
-            'issii',
-            $codigoLivro,
-            $dataEmprestimo,
-            $dataDevolucao,
-            $matriculaAluno,
-            $matriculaAdministrador
-        );
-
-        $resultado = $stmtEmprestimo->execute();
-
-        $stmtEmprestimo->close();
-
-        if (!$resultado) {
-            $this->conn->rollback();
-            return false;
-        }
-
-        $this->conn->commit();
-
-        return true;
     }
 
     public function registrarDevolucao(

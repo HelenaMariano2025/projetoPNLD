@@ -31,6 +31,10 @@ class AdministradorRepositoryIntegrationTest extends TestCase
             $this->assertTrue($stmt->execute());
             $stmt->close();
 
+        $administrador = $repository->buscarPorMatricula(1234567890);
+
+        $this->assertNotNull($administrador);
+        $this->assertSame(1234567890, (int) $administrador['matricula']);
             $repository = new AdministradorRepository($conn);
             $administrador = $repository->buscarPorMatricula($matricula);
 

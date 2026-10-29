@@ -50,7 +50,7 @@ class TurmaRepositoryTest extends TestCase
 
     public function testConsultarTurmasAtivas()
     {
-        $resultadoMock = $this->createMock(mysqli_result::class);
+        $resultadoMock = $this->createStub(mysqli_result::class);
 
         $conn = $this->createMock(mysqli::class);
 

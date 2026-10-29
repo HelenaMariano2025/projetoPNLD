@@ -18,7 +18,7 @@ class LoginTest extends TestCase
 
     public function testAutenticaAdministradorComCredenciaisValidas()
     {
-        $repository = $this->createMock(AdministradorRepository::class);
+        $repository = $this->createStub(AdministradorRepository::class);
 
         $repository
             ->method('buscarPorMatricula')
@@ -40,7 +40,7 @@ class LoginTest extends TestCase
 
     public function testNaoAutenticaComSenhaInvalida()
     {
-        $repository = $this->createMock(AdministradorRepository::class);
+        $repository = $this->createStub(AdministradorRepository::class);
 
         $repository
             ->method('buscarPorMatricula')
@@ -61,7 +61,7 @@ class LoginTest extends TestCase
 
     public function testNaoAutenticaMatriculaNaoCadastrada()
     {
-        $repository = $this->createMock(AdministradorRepository::class);
+        $repository = $this->createStub(AdministradorRepository::class);
 
         $repository
             ->method('buscarPorMatricula')
