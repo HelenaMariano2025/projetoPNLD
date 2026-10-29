@@ -36,45 +36,62 @@ class LivroRepositoryIntegrationTest extends TestCase
             $codigo = $conn->insert_id;
             $this->assertGreaterThan(0, $codigo);
 
-            $consulta = $repository->consultarDisponiveis($titulo);
+            $consulta = $repository->consultarTodos($titulo);
             $this->assertInstanceOf(mysqli_result::class, $consulta);
-            $this->assertSame($isbn, (string) $consulta->fetch_assoc()['isbn']);
+
+            $livroCadastrado = $consulta->fetch_assoc();
+            $this->assertNotNull($livroCadastrado);
+            $this->assertSame($isbn, (string) $livroCadastrado['isbn']);
+            $this->assertSame($titulo, $livroCadastrado['titulo']);
+            $this->assertSame('Autora de teste', $livroCadastrado['autor']);
+            $this->assertSame(1, (int) $livroCadastrado['codigo_editora']);
+            $this->assertSame(2024, (int) $livroCadastrado['ano']);
+            $this->assertSame('ativo', $livroCadastrado['situacao']);
+            $this->assertSame(1, (int) $livroCadastrado['edicao']);
+            $this->assertSame(5, (int) $livroCadastrado['qtde_disponivel']);
+
+            $tituloAtualizado = 'Título atualizado ' . $isbn;
 
             $this->assertTrue($repository->atualizar(
                 $codigo,
                 $isbn,
-                'Título atualizado na integração',
-                'Autora de teste',
-                1,
-                2025,
-                'ativo',
+                $tituloAtualizado,
+                'Autora atualizada',
                 2,
-                8
+                2025,
+                'inativo',
+                2,
+                0
             ));
 
-            $stmt = $conn->prepare(
-                'SELECT titulo, edicao FROM livro WHERE codigo = ?'
-            );
-            $stmt->bind_param('i', $codigo);
-            $stmt->execute();
-            $livroAtualizado = $stmt->get_result()->fetch_assoc();
+            $consultaAtualizada = $repository->consultarTodos($tituloAtualizado);
+            $this->assertInstanceOf(mysqli_result::class, $consultaAtualizada);
 
-            $this->assertSame(
-                'Título atualizado na integração',
-                $livroAtualizado['titulo']
-            );
+            $livroAtualizado = $consultaAtualizada->fetch_assoc();
+            $this->assertNotNull($livroAtualizado);
+            $this->assertSame($tituloAtualizado, $livroAtualizado['titulo']);
+            $this->assertSame('Autora atualizada', $livroAtualizado['autor']);
+            $this->assertSame(2, (int) $livroAtualizado['codigo_editora']);
+            $this->assertSame(2025, (int) $livroAtualizado['ano']);
+            $this->assertSame('inativo', $livroAtualizado['situacao']);
             $this->assertSame(2, (int) $livroAtualizado['edicao']);
+            $this->assertSame(0, (int) $livroAtualizado['qtde_disponivel']);
 
             $this->assertTrue($repository->excluir($codigo));
 
             $stmt = $conn->prepare(
-                'SELECT situacao FROM livro WHERE codigo = ?'
+                'SELECT codigo FROM livro WHERE codigo = ?'
             );
             $stmt->bind_param('i', $codigo);
             $stmt->execute();
-            $livroExcluido = $stmt->get_result()->fetch_assoc();
 
-            $this->assertSame('inativo', $livroExcluido['situacao']);
+            $resultado = $stmt->get_result();
+            $this->assertInstanceOf(mysqli_result::class, $resultado);
+            $this->assertSame(0, $resultado->num_rows);
+
+            $consultaAposExclusao = $repository->consultarTodos($tituloAtualizado);
+            $this->assertInstanceOf(mysqli_result::class, $consultaAposExclusao);
+            $this->assertSame(0, $consultaAposExclusao->num_rows);
         } finally {
             $conn->rollback();
             $conn->close();
