@@ -37,6 +37,29 @@ class LivroRepository
         return $stmt->execute();
     }
 
+    public function consultarTodos(?string $titulo = null): mysqli_result|false
+    {
+        $sql = 'SELECT * FROM livro';
+        $temBusca = $titulo !== null && trim($titulo) !== '';
+
+        if ($temBusca) {
+            $sql .= ' WHERE titulo LIKE ?';
+        }
+
+        $sql .= ' ORDER BY titulo, codigo';
+
+        $stmt = $this->conn->prepare($sql);
+
+        if ($temBusca) {
+            $termo = '%' . trim($titulo) . '%';
+            $stmt->bind_param('s', $termo);
+        }
+
+        $stmt->execute();
+
+        return $stmt->get_result();
+    }
+
     public function consultarDisponiveis(?string $titulo = null): mysqli_result|false
     {
         $sql = "SELECT * FROM livro
@@ -96,9 +119,30 @@ class LivroRepository
 
     public function excluir(int $codigo): bool
     {
-        $sql = "UPDATE livro SET situacao = 'inativo' WHERE codigo = ?";
+        $stmt = $this->conn->prepare(
+            'SELECT COUNT(*) AS total FROM emprestimo WHERE codigo_livro = ?'
+        );
+        $stmt->bind_param('i', $codigo);
 
-        $stmt = $this->conn->prepare($sql);
+        if (!$stmt->execute()) {
+            return false;
+        }
+
+        $resultado = $stmt->get_result();
+
+        if ($resultado === false) {
+            return false;
+        }
+
+        $vinculos = $resultado->fetch_assoc();
+
+        if ($vinculos === null || (int) $vinculos['total'] > 0) {
+            return false;
+        }
+
+        $stmt = $this->conn->prepare(
+            'DELETE FROM livro WHERE codigo = ?'
+        );
         $stmt->bind_param('i', $codigo);
 
         return $stmt->execute();

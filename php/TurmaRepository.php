@@ -79,4 +79,59 @@ class TurmaRepository
 
         return $stmt->execute();
     }
+
+
+    
+    
+    public function pesquisarPorCurso($curso)
+    {
+        $sql = "SELECT * FROM turma WHERE situacao = ? AND curso LIKE ?";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $situacao = 'ativo';
+        $cursoPesquisa = '%' . $curso . '%';
+
+        $stmt->bind_param("ss", $situacao, $cursoPesquisa);
+        $stmt->execute();
+
+        return $stmt->get_result();
+    }
+
+    public function temAlunosVinculados($codigo)
+    {
+        $sql = "SELECT COUNT(*) AS total
+                FROM aluno
+                WHERE codigoTurma = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $codigo);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+
+        $stmt->close();
+
+        return (int) $row['total'] > 0;
+    }
+
+    
+    public function excluir($codigo)
+    {
+        if ($this->temAlunosVinculados($codigo)) {
+            return false;
+        }
+
+        $sql = "DELETE FROM turma WHERE codigo = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $codigo);
+
+        $resultado = $stmt->execute();
+
+        $stmt->close();
+
+        return $resultado;
+    }
 }
