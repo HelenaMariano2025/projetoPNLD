@@ -1,8 +1,9 @@
 <?php
 
+use App\EmprestimoRepository;
 use PHPUnit\Framework\TestCase;
 
-require_once __DIR__ . '/../php/EmprestimoRepository.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../php/LivroRepository.php';
 
 class EmprestimoRepositoryTest extends TestCase

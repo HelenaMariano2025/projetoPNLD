@@ -1,10 +1,11 @@
 <?php
+
+use App\EmprestimoRepository;
+
 session_start();
 
+require_once __DIR__ . '/vendor/autoload.php';
 include 'php/conexao.php';
-require_once 'php/regras.php';
-require_once 'php/regras_emprestimo.php';
-require_once 'php/EmprestimoRepository.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $isbn = trim($_POST['codLivro'] ?? '');

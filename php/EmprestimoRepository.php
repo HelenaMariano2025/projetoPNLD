@@ -1,8 +1,10 @@
 <?php
 
+namespace App;
+
 class EmprestimoRepository
 {
-    public function __construct(private mysqli $conn)
+    public function __construct(private \mysqli $conn)
     {
     }
 
