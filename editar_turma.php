@@ -1,11 +1,13 @@
 <?php
+
+use App\TurmaRepository;
+
 session_start();
 
-require_once 'php/auth.php';
+require_once __DIR__ . '/vendor/autoload.php';
 exigirAutenticacao();
 
 require_once 'php/conexao.php';
-require_once 'php/TurmaRepository.php';
 
 $repository = new TurmaRepository($conn);
 

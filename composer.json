@@ -5,7 +5,8 @@
         },
         "files": [
             "php/regras.php",
-            "php/regras_emprestimo.php"
+            "php/regras_emprestimo.php",
+            "php/auth.php"
         ]
     },
     "require-dev": {

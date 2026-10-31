@@ -1,9 +1,9 @@
-
 <?php
 
+use App\TurmaRepository;
 use PHPUnit\Framework\TestCase;
 
-require_once __DIR__ . '/../php/TurmaRepository.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class TurmaRepositoryIntegrationTest extends TestCase
 {
