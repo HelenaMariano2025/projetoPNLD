@@ -1,8 +1,9 @@
 <?php
 
+use App\TurmaRepository;
 use PHPUnit\Framework\TestCase;
 
-require_once __DIR__ . '/../php/TurmaRepository.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class TurmaRepositoryTest extends TestCase
 {
@@ -138,7 +139,7 @@ class TurmaRepositoryTest extends TestCase
     public function testPesquisarTurmasPorCurso()
     {
         $stmt = $this->createMock(mysqli_stmt::class);
-        $resultadoMock = $this->createMock(mysqli_result::class);
+        $resultadoMock = $this->createStub(mysqli_result::class);
 
         $stmt->expects($this->once())
             ->method('bind_param')
