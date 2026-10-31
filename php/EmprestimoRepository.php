@@ -15,173 +15,168 @@ class EmprestimoRepository
         int $matriculaAluno,
         int $matriculaAdministrador
     ): bool {
-        $this->conn->begin_transaction();
+        $sucesso = false;
+        $transacaoIniciada = false;
 
         try {
+            $this->conn->begin_transaction();
+            $transacaoIniciada = true;
+
             $sqlLivro = 'UPDATE livro
                          SET qtde_disponivel = qtde_disponivel - 1
                          WHERE codigo = ? AND qtde_disponivel > 0';
 
             $stmtLivro = $this->conn->prepare($sqlLivro);
 
-            if ($stmtLivro === false) {
-                $this->conn->rollback();
-                return false;
-            }
+            if ($stmtLivro !== false) {
+                $stmtLivro->bind_param('i', $codigoLivro);
+                $stmtLivro->execute();
 
-            $stmtLivro->bind_param('i', $codigoLivro);
-            $stmtLivro->execute();
-
-            if ($stmtLivro->affected_rows !== 1) {
+                $livroAtualizado = $stmtLivro->affected_rows === 1;
                 $stmtLivro->close();
-                $this->conn->rollback();
-                return false;
+
+                if ($livroAtualizado) {
+                    $sqlEmprestimo = 'INSERT INTO emprestimo
+                        (codigo_livro, dataEmprestimo, dataDevolucao, matricula_aluno, adm_responsavel)
+                        VALUES (?, ?, ?, ?, ?)';
+
+                    $stmtEmprestimo = $this->conn->prepare($sqlEmprestimo);
+
+                    if ($stmtEmprestimo !== false) {
+                        $stmtEmprestimo->bind_param(
+                            'issii',
+                            $codigoLivro,
+                            $dataEmprestimo,
+                            $dataDevolucao,
+                            $matriculaAluno,
+                            $matriculaAdministrador
+                        );
+
+                        $sucesso = $stmtEmprestimo->execute();
+                        $stmtEmprestimo->close();
+                    }
+                }
             }
 
-            $stmtLivro->close();
-
-            $sqlEmprestimo = 'INSERT INTO emprestimo
-                    (codigo_livro, dataEmprestimo, dataDevolucao, matricula_aluno, adm_responsavel)
-                    VALUES (?, ?, ?, ?, ?)';
-
-            $stmtEmprestimo = $this->conn->prepare($sqlEmprestimo);
-
-            if ($stmtEmprestimo === false) {
+            if ($sucesso) {
+                $this->conn->commit();
+            } else {
                 $this->conn->rollback();
-                return false;
             }
 
-            $stmtEmprestimo->bind_param(
-                'issii',
-                $codigoLivro,
-                $dataEmprestimo,
-                $dataDevolucao,
-                $matriculaAluno,
-                $matriculaAdministrador
-            );
-
-            $resultado = $stmtEmprestimo->execute();
-
-            $stmtEmprestimo->close();
-
-            if (!$resultado) {
-                $this->conn->rollback();
-                return false;
-            }
-
-            $this->conn->commit();
-
-            return true;
+            $transacaoIniciada = false;
         } catch (\mysqli_sql_exception $e) {
-            $this->conn->rollback();
-            return false;
+            if ($transacaoIniciada) {
+                $this->conn->rollback();
+            }
+
+            error_log($e->getMessage());
         }
+
+        return $sucesso;
     }
 
     public function registrarDevolucao(
         int $codigoEmprestimo,
         string $dataDevolucao
     ): bool {
-        $sqlVerificar = 'SELECT codigo_devolucao
-                         FROM devolucao
-                         WHERE codigo_emprestimo = ?
-                         LIMIT 1';
+        $sucesso = false;
+        $transacaoIniciada = false;
 
-        $stmtVerificar = $this->conn->prepare($sqlVerificar);
+        try {
+            $sqlVerificar = 'SELECT codigo_devolucao
+                             FROM devolucao
+                             WHERE codigo_emprestimo = ?
+                             LIMIT 1';
 
-        if ($stmtVerificar === false) {
-            return false;
+            $stmtVerificar = $this->conn->prepare($sqlVerificar);
+
+            if ($stmtVerificar !== false) {
+                $stmtVerificar->bind_param('i', $codigoEmprestimo);
+                $stmtVerificar->execute();
+
+                $resultado = $stmtVerificar->get_result();
+                $jaDevolvido = $resultado->num_rows > 0;
+
+                $stmtVerificar->close();
+
+                if (!$jaDevolvido) {
+                    $sqlEmprestimo = 'SELECT codigo_livro
+                                      FROM emprestimo
+                                      WHERE codigo_emprestimo = ?
+                                      LIMIT 1';
+
+                    $stmtEmprestimo = $this->conn->prepare($sqlEmprestimo);
+
+                    if ($stmtEmprestimo !== false) {
+                        $stmtEmprestimo->bind_param('i', $codigoEmprestimo);
+                        $stmtEmprestimo->execute();
+
+                        $resultadoEmprestimo = $stmtEmprestimo->get_result();
+
+                        if ($resultadoEmprestimo->num_rows > 0) {
+                            $emprestimo = $resultadoEmprestimo->fetch_assoc();
+                            $codigoLivro = (int) $emprestimo['codigo_livro'];
+
+                            $stmtEmprestimo->close();
+
+                            $this->conn->begin_transaction();
+                            $transacaoIniciada = true;
+
+                            $sqlInserir = 'INSERT INTO devolucao
+                                           (codigo_emprestimo, dataDevolucao)
+                                           VALUES (?, ?)';
+
+                            $stmtInserir = $this->conn->prepare($sqlInserir);
+
+                            if ($stmtInserir !== false) {
+                                $stmtInserir->bind_param(
+                                    'is',
+                                    $codigoEmprestimo,
+                                    $dataDevolucao
+                                );
+
+                                $resultadoInsercao = $stmtInserir->execute();
+                                $stmtInserir->close();
+
+                                if ($resultadoInsercao) {
+                                    $sqlLivro = 'UPDATE livro
+                                                 SET qtde_disponivel = qtde_disponivel + 1
+                                                 WHERE codigo = ?';
+
+                                    $stmtLivro = $this->conn->prepare($sqlLivro);
+
+                                    if ($stmtLivro !== false) {
+                                        $stmtLivro->bind_param('i', $codigoLivro);
+                                        $sucesso = $stmtLivro->execute();
+                                        $stmtLivro->close();
+                                    }
+                                }
+                            }
+                        } else {
+                            $stmtEmprestimo->close();
+                        }
+                    }
+                }
+            }
+
+            if ($transacaoIniciada) {
+                if ($sucesso) {
+                    $this->conn->commit();
+                } else {
+                    $this->conn->rollback();
+                }
+
+                $transacaoIniciada = false;
+            }
+        } catch (\mysqli_sql_exception $e) {
+            if ($transacaoIniciada) {
+                $this->conn->rollback();
+            }
+
+            error_log($e->getMessage());
         }
 
-        $stmtVerificar->bind_param('i', $codigoEmprestimo);
-        $stmtVerificar->execute();
-
-        $resultado = $stmtVerificar->get_result();
-
-        if ($resultado->num_rows > 0) {
-            $stmtVerificar->close();
-            return false;
-        }
-
-        $stmtVerificar->close();
-
-        $sqlEmprestimo = 'SELECT codigo_livro
-                          FROM emprestimo
-                          WHERE codigo_emprestimo = ?
-                          LIMIT 1';
-
-        $stmtEmprestimo = $this->conn->prepare($sqlEmprestimo);
-
-        if ($stmtEmprestimo === false) {
-            return false;
-        }
-
-        $stmtEmprestimo->bind_param('i', $codigoEmprestimo);
-        $stmtEmprestimo->execute();
-
-        $resultadoEmprestimo = $stmtEmprestimo->get_result();
-
-        if ($resultadoEmprestimo->num_rows === 0) {
-            $stmtEmprestimo->close();
-            return false;
-        }
-
-        $emprestimo = $resultadoEmprestimo->fetch_assoc();
-        $codigoLivro = (int) $emprestimo['codigo_livro'];
-
-        $stmtEmprestimo->close();
-
-        $this->conn->begin_transaction();
-
-        $sqlInserir = 'INSERT INTO devolucao
-                       (codigo_emprestimo, dataDevolucao)
-                       VALUES (?, ?)';
-
-        $stmtInserir = $this->conn->prepare($sqlInserir);
-
-        if ($stmtInserir === false) {
-            $this->conn->rollback();
-            return false;
-        }
-
-        $stmtInserir->bind_param(
-            'is',
-            $codigoEmprestimo,
-            $dataDevolucao
-        );
-
-        $resultadoInsercao = $stmtInserir->execute();
-
-        $stmtInserir->close();
-
-        if (!$resultadoInsercao) {
-            $this->conn->rollback();
-            return false;
-        }
-
-        $sqlLivro = 'UPDATE livro
-                     SET qtde_disponivel = qtde_disponivel + 1
-                     WHERE codigo = ?';
-
-        $stmtLivro = $this->conn->prepare($sqlLivro);
-
-        if ($stmtLivro === false) {
-            $this->conn->rollback();
-            return false;
-        }
-
-        $stmtLivro->bind_param('i', $codigoLivro);
-        $resultadoLivro = $stmtLivro->execute();
-
-        $stmtLivro->close();
-
-        if (!$resultadoLivro) {
-            $this->conn->rollback();
-            return false;
-        }
-
-        $this->conn->commit();
-
-        return true;
+        return $sucesso;
     }
 }
