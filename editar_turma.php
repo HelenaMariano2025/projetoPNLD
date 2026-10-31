@@ -2,6 +2,8 @@
 
 use App\TurmaRepository;
 
+const REDIRECT_TURMAS = 'Location: turmas.php';
+
 session_start();
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -30,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         !in_array($situacao, ['ativo', 'inativo'], true)
     ) {
         $_SESSION['mensagem'] = 'Preencha os campos obrigatórios com valores válidos.';
-        header('Location: turmas.php');
+        header(REDIRECT_TURMAS);
         exit();
     }
 
@@ -54,13 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $conn->close();
-    header('Location: turmas.php');
+    header(REDIRECT_TURMAS);
     exit();
 }
 
 if (!$codigo) {
     $_SESSION['mensagem'] = 'Código de turma inválido.';
-    header('Location: turmas.php');
+    header(REDIRECT_TURMAS);
     exit();
 }
 
@@ -74,7 +76,7 @@ $stmt->close();
 if (!$turma) {
     $_SESSION['mensagem'] = 'Turma não encontrada.';
     $conn->close();
-    header('Location: turmas.php');
+    header(REDIRECT_TURMAS);
     exit();
 }
 ?>
