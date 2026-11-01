@@ -4,6 +4,14 @@ class LivroValidator
 {
     public static function validar(array $dados): ?string
     {
+        return self::validarTextos($dados)
+            ?? self::validarIsbn(trim($dados['isbn']))
+            ?? self::validarNumeros($dados)
+            ?? self::validarSituacao($dados);
+    }
+
+    private static function validarTextos(array $dados): ?string
+    {
         foreach (['isbn', 'titulo', 'autor'] as $campo) {
             if (
                 !isset($dados[$campo])
@@ -20,19 +28,23 @@ class LivroValidator
             }
         }
 
-        $isbn = trim($dados['isbn']);
+        return null;
+    }
 
-        if (
-            !ctype_digit($isbn)
-            || filter_var(
+    private static function validarIsbn(string $isbn): ?string
+    {
+        $valido = ctype_digit($isbn)
+            && filter_var(
                 $isbn,
                 FILTER_VALIDATE_INT,
                 ['options' => ['min_range' => 1]]
-            ) === false
-        ) {
-            return 'Informe um ISBN numérico válido.';
-        }
+            ) !== false;
 
+        return $valido ? null : 'Informe um ISBN numérico válido.';
+    }
+
+    private static function validarNumeros(array $dados): ?string
+    {
         foreach (['codigo_editora', 'ano', 'edicao'] as $campo) {
             if (!self::inteiroValido($dados[$campo] ?? null, 1)) {
                 return 'Código da editora, ano e edição devem ser inteiros positivos.';
@@ -43,11 +55,14 @@ class LivroValidator
             return 'A quantidade disponível deve ser um inteiro maior ou igual a zero.';
         }
 
-        if (!in_array($dados['situacao'] ?? null, ['ativo', 'inativo'], true)) {
-            return 'Selecione uma situação válida.';
-        }
-
         return null;
+    }
+
+    private static function validarSituacao(array $dados): ?string
+    {
+        $valida = in_array($dados['situacao'] ?? null, ['ativo', 'inativo'], true);
+
+        return $valida ? null : 'Selecione uma situação válida.';
     }
 
     private static function inteiroValido(mixed $valor, int $minimo): bool
