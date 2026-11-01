@@ -133,8 +133,6 @@ class TurmaRepositoryTest extends TestCase
 
         $this->assertTrue($resultado);
     }
-
-
     
     public function testPesquisarTurmasPorCurso()
     {
@@ -167,5 +165,87 @@ class TurmaRepositoryTest extends TestCase
         $resultado = $repository->pesquisarPorCurso('Informatica');
 
         $this->assertSame($resultadoMock, $resultado);
+    }
+
+    public function testTemAlunosVinculadosRetornaVerdadeiroQuandoHaAlunos()
+    {
+        $this->assertTrue(
+            $this->consultarVinculos(['total' => '2'])
+        );
+    }
+
+    public function testTemAlunosVinculadosRetornaFalsoQuandoNaoHaAlunos()
+    {
+        $this->assertFalse(
+            $this->consultarVinculos(['total' => '0'])
+        );
+    }
+
+    private function consultarVinculos(array $linha): bool
+    {
+        $resultado = $this->createStub(mysqli_result::class);
+        $resultado->method('fetch_assoc')->willReturn($linha);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->once())
+            ->method('bind_param')
+            ->with('i', 10);
+        $stmt->expects($this->once())->method('execute');
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultado);
+        $stmt->expects($this->once())->method('close');
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->willReturn($stmt);
+
+        return (new TurmaRepository($conn))->temAlunosVinculados(10);
+    }
+
+    public function testExcluirBloqueiaQuandoHaAlunosVinculados()
+    {
+        $resultado = $this->createStub(mysqli_result::class);
+        $resultado->method('fetch_assoc')->willReturn(['total' => '3']);
+
+        $stmtContagem = $this->createMock(mysqli_stmt::class);
+        $stmtContagem->method('get_result')->willReturn($resultado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->willReturn($stmtContagem);
+
+        $repository = new TurmaRepository($conn);
+
+        $this->assertFalse($repository->excluir(10));
+    }
+
+    public function testExcluirTurmaSemAlunosVinculados()
+    {
+        $resultado = $this->createStub(mysqli_result::class);
+        $resultado->method('fetch_assoc')->willReturn(['total' => '0']);
+
+        $stmtContagem = $this->createMock(mysqli_stmt::class);
+        $stmtContagem->method('get_result')->willReturn($resultado);
+
+        $stmtExclusao = $this->createMock(mysqli_stmt::class);
+        $stmtExclusao->expects($this->once())
+            ->method('bind_param')
+            ->with('i', 10);
+        $stmtExclusao->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmtExclusao->expects($this->once())->method('close');
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->exactly(2))
+            ->method('prepare')
+            ->willReturnOnConsecutiveCalls($stmtContagem, $stmtExclusao);
+
+        $repository = new TurmaRepository($conn);
+
+        $this->assertTrue($repository->excluir(10));
     }
 }
