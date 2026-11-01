@@ -6,7 +6,7 @@ exigirAutenticacao();
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
   <!-- Basic -->
