@@ -11,16 +11,10 @@ class CadastroAdministrador
 
     public function cadastrar($matricula, $nome, $senha)
     {
-        if (trim($matricula) === "") {
-            return "A matrícula é obrigatória.";
-        }
+        $erro = $this->validar($matricula, $nome, $senha);
 
-        if (trim($nome) === "") {
-            return "O nome é obrigatório.";
-        }
-
-        if ($senha === "") {
-            return "A senha é obrigatória.";
+        if ($erro !== null) {
+            return $erro;
         }
 
         if ($this->repository->inserir($matricula, $nome, $senha)) {
@@ -28,5 +22,16 @@ class CadastroAdministrador
         }
 
         return "Não foi possível cadastrar o administrador.";
+    }
+
+    private function validar($matricula, $nome, $senha): ?string
+    {
+        $erros = [
+            "A matrícula é obrigatória." => trim($matricula) === "",
+            "O nome é obrigatório." => trim($nome) === "",
+            "A senha é obrigatória." => $senha === "",
+        ];
+
+        return array_search(true, $erros, true) ?: null;
     }
 }

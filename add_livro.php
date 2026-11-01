@@ -86,9 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p><a href="livros.php">Voltar para livros</a></p>
 
         <?php if ($mensagem !== ''): ?>
-            <p class="alert alert-info" role="status">
+            <output class="alert alert-info d-block">
                 <?= escapar($mensagem) ?>
-            </p>
+            </output>
         <?php endif; ?>
 
         <form action="add_livro.php" method="post">

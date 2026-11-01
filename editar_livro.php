@@ -9,6 +9,10 @@ require_once __DIR__ . '/php/conexao.php';
 require_once __DIR__ . '/php/LivroRepository.php';
 require_once __DIR__ . '/php/LivroValidator.php';
 
+class FalhaConsultaLivroException extends RuntimeException
+{
+}
+
 function escapar($valor): string
 {
     return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
@@ -38,12 +42,12 @@ try {
     $resultado = $stmt->get_result();
 
     if ($resultado === false) {
-        throw new RuntimeException('Falha na consulta do livro.');
+        throw new FalhaConsultaLivroException('Falha na consulta do livro.');
     }
 
     $livro = $resultado->fetch_assoc();
     $stmt->close();
-} catch (mysqli_sql_exception | RuntimeException $erro) {
+} catch (mysqli_sql_exception | FalhaConsultaLivroException $erro) {
     $conn->close();
     http_response_code(500);
     exit('Não foi possível consultar o livro.');
@@ -139,9 +143,9 @@ $conn->close();
         <p><a href="livros.php">Voltar para livros</a></p>
 
         <?php if ($mensagem !== ''): ?>
-            <p class="alert alert-info" role="status">
+            <output class="alert alert-info d-block">
                 <?= escapar($mensagem) ?>
-            </p>
+            </output>
         <?php endif; ?>
 
         <form method="post" action="editar_livro.php">

@@ -326,9 +326,9 @@ unset($_SESSION['mensagem_alunos']);
     </div>
 
     <?php if ($mensagem !== ''): ?>
-        <div class="alert alert-success" role="status">
+        <output class="alert alert-success d-block">
             <?= escapar($mensagem) ?>
-        </div>
+        </output>
     <?php endif; ?>
 
     <?php if ($erro !== ''): ?>

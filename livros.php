@@ -57,9 +57,9 @@ $exclusao = $_GET['exclusao'] ?? '';
         </nav>
 
         <?php if ($exclusao === 'sucesso'): ?>
-            <p class="alert alert-success" role="status">
+            <output class="alert alert-success d-block">
                 Livro excluído com sucesso.
-            </p>
+            </output>
         <?php elseif ($exclusao === 'erro'): ?>
             <p class="alert alert-danger" role="alert">
                 Não foi possível excluir o livro. Livros vinculados a
@@ -89,11 +89,11 @@ $exclusao = $_GET['exclusao'] ?? '';
                 Não foi possível consultar os livros. Tente novamente.
             </p>
         <?php elseif ($livros === []): ?>
-            <p class="alert alert-info" role="status">
+            <output class="alert alert-info d-block">
                 <?= $titulo !== ''
                     ? 'Nenhum livro encontrado para o título informado.'
                     : 'Nenhum livro cadastrado.' ?>
-            </p>
+            </output>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-striped table-bordered">
