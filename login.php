@@ -28,8 +28,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 isset($_COOKIE['cookies_aceitos']) &&
                 $_COOKIE['cookies_aceitos'] == 'true'
             ) {
-                setcookie("matricula", $administrador["matricula"], time() + 604800, "/");
-                setcookie("nome", $administrador["nome"], time() + 604800, "/");
+                $opcoes = [
+                    'expires'  => time() + 604800,
+                    'path'     => '/',
+                    'secure'   => true,
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ];
+                setcookie("matricula", $administrador["matricula"], $opcoes);
+                setcookie("nome", $administrador["nome"], $opcoes);
             }
 
             header("Location: funcoes.php");
