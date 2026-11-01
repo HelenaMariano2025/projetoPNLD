@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $matricula = $_POST['matricula'];

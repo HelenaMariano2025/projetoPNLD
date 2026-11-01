@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 require_once 'php/AdministradorRepository.php';
 require_once 'php/regras.php';
 
@@ -28,8 +28,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 isset($_COOKIE['cookies_aceitos']) &&
                 $_COOKIE['cookies_aceitos'] == 'true'
             ) {
-                setcookie("matricula", $administrador["matricula"], time() + 604800, "/");
-                setcookie("nome", $administrador["nome"], time() + 604800, "/");
+                $opcoes = [
+                    'expires'  => time() + 604800,
+                    'path'     => '/',
+                    'secure'   => true,
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ];
+                setcookie("matricula", $administrador["matricula"], $opcoes);
+                setcookie("nome", $administrador["nome"], $opcoes);
             }
 
             header("Location: funcoes.php");
@@ -224,9 +231,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js" integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha384-l/y5WJTphApmSlx76Ev6k4G3zxu/+19CVvn9OTKI7gs4Yu5Hm8mjpdtdr5oyhnNo" crossorigin="anonymous"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js" integrity="sha384-GDqQaUJRVoUVDdvZ7PUgCImrsuMFD+vqMpU2F81AVtXPauUySIZOHhoS1m9Azh+X" crossorigin="anonymous"></script>
 
   <script src="js/custom.js"></script>
 
