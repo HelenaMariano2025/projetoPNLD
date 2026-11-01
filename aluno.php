@@ -5,6 +5,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 require_once __DIR__ . '/php/conexao.php';
 require_once __DIR__ . '/php/AlunoRepository.php';
+require_once __DIR__ . '/php/AlunoValidador.php';
 
 const ALUNO_NAO_ENCONTRADO = 'Aluno não encontrado.';
 
@@ -62,10 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 : '';
         }
 
-        if (!preg_match('/^\d{1,18}$/D', $dados['matricula'])) {
-            throw new InvalidArgumentException(
-                'Informe uma matrícula numérica válida, com até 18 dígitos.'
-            );
+                $erroMatricula = AlunoValidator::validarMatricula($dados['matricula']);
+
+        if ($erroMatricula !== null) {
+            throw new InvalidArgumentException($erroMatricula);
         }
 
         if ($acao === 'inativar') {
@@ -88,48 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new InvalidArgumentException('Operação inválida.');
         }
 
-        foreach (
-            ['nome', 'datnasc', 'endereco', 'sexo', 'email', 'codigoTurma']
-            as $campo
-        ) {
-            if ($dados[$campo] === '') {
-                throw new InvalidArgumentException(
-                    'Preencha todos os campos obrigatórios.'
-                );
-            }
-        }
+        $erroDados = AlunoValidator::validarDados($dados);
 
-        if (!filter_var($dados['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException('Informe um e-mail válido.');
-        }
-
-        $data = DateTimeImmutable::createFromFormat(
-            '!Y-m-d',
-            $dados['datnasc']
-        );
-
-        if (!$data || $data->format('Y-m-d') !== $dados['datnasc']) {
-            throw new InvalidArgumentException(
-                'Informe uma data de nascimento válida.'
-            );
-        }
-
-        if (!in_array($dados['sexo'], ['M', 'F'], true)) {
-            throw new InvalidArgumentException(
-                'Selecione uma opção válida para sexo.'
-            );
-        }
-
-        if (!in_array($dados['situacao'], ['ativo', 'inativo'], true)) {
-            throw new InvalidArgumentException('Selecione uma situação válida.');
-        }
-
-        if (
-            !ctype_digit($dados['codigoTurma']) ||
-            strlen($dados['codigoTurma']) > 10 ||
-            (int) $dados['codigoTurma'] > 2147483647
-        ) {
-            throw new InvalidArgumentException('Selecione uma turma válida.');
+        if ($erroDados !== null) {
+            throw new InvalidArgumentException($erroDados);
         }
 
         $stmt = $conn->prepare(
