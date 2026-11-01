@@ -23,11 +23,7 @@ function autenticarAdministrador($matricula, $senha, $repository)
 
     $administrador = $repository->buscarPorMatricula((int) $matricula);
 
-    if ($administrador === null) {
-        return null;
-    }
-
-    if ($senha !== $administrador['senha']) {
+    if ($administrador === null || $senha !== $administrador['senha']) {
         return null;
     }
 

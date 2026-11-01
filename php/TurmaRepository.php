@@ -37,9 +37,7 @@ class TurmaRepository
     {
         $sql = "SELECT * FROM turma WHERE situacao = 'ativo'";
 
-        $result = $this->conn->query($sql);
-
-        return $result;
+        return $this->conn->query($sql);
     }
 
     public function atualizar($codigo, $curso, $siglaCurso, $periodo, $serie, $matrizCurricular, $situacao)
