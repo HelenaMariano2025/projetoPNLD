@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once 'php/http.php';
+
+iniciarSessao();
 
 require_once 'php/conexao.php';
 require_once 'php/AdministradorRepository.php';
@@ -28,19 +30,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 isset($_COOKIE['cookies_aceitos']) &&
                 $_COOKIE['cookies_aceitos'] == 'true'
             ) {
-                $opcoes = [
-                    'expires'  => time() + 604800,
-                    'path'     => '/',
-                    'secure'   => true,
-                    'httponly' => true,
-                    'samesite' => 'Lax',
-                ];
-                setcookie("matricula", $administrador["matricula"], $opcoes);
-                setcookie("nome", $administrador["nome"], $opcoes);
+                definirCookie("matricula", $administrador["matricula"]);
+                definirCookie("nome", $administrador["nome"]);
             }
 
-            header("Location: funcoes.php");
-            exit();
+            redirecionar("funcoes.php");
         }
 
         echo "Matrícula ou senha inválida.";

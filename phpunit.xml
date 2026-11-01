@@ -13,6 +13,12 @@
     <source>
         <include>
             <directory>php</directory>
+            <file>login.php</file>
         </include>
     </source>
+
+    <php>
+        <const name="PNLD_TESTES" value="true"/>
+    </php>
+
 </phpunit>
