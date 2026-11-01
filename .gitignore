@@ -1,3 +1,8 @@
 vendor/
 .phpunit.result.cache
 composer-setup.php
+coverage.xml
+coverage-alunos.xml
+.scannerwork/
+coverage-html/
+infection.json5
