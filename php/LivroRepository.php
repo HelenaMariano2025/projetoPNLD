@@ -119,24 +119,7 @@ class LivroRepository
 
     public function excluir(int $codigo): bool
     {
-        $stmt = $this->conn->prepare(
-            'SELECT COUNT(*) AS total FROM emprestimo WHERE codigo_livro = ?'
-        );
-        $stmt->bind_param('i', $codigo);
-
-        if (!$stmt->execute()) {
-            return false;
-        }
-
-        $resultado = $stmt->get_result();
-
-        if ($resultado === false) {
-            return false;
-        }
-
-        $vinculos = $resultado->fetch_assoc();
-
-        if ($vinculos === null || (int) $vinculos['total'] > 0) {
+        if (!$this->livroSemEmprestimos($codigo)) {
             return false;
         }
 
@@ -147,4 +130,22 @@ class LivroRepository
 
         return $stmt->execute();
     }
+
+    private function livroSemEmprestimos(int $codigo): bool
+    {
+        $stmt = $this->conn->prepare(
+            'SELECT COUNT(*) AS total FROM emprestimo WHERE codigo_livro = ?'
+        );
+        $stmt->bind_param('i', $codigo);
+
+        if (!$stmt->execute()) {
+            return false;
+        }
+
+        $resultado = $stmt->get_result();
+        $vinculos = $resultado === false ? null : $resultado->fetch_assoc();
+
+        return $vinculos !== null && (int) $vinculos['total'] === 0;
+    }
 }
+
