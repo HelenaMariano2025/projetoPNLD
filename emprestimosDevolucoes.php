@@ -5,7 +5,7 @@ session_start();
 require_once 'php/auth.php';
 exigirAutenticacao();
 
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 
 ?>
 <!DOCTYPE html>

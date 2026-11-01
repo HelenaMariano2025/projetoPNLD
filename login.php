@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 require_once 'php/AdministradorRepository.php';
 require_once 'php/regras.php';
 

@@ -5,7 +5,7 @@ use App\EmprestimoRepository;
 session_start();
 
 require_once __DIR__ . '/vendor/autoload.php';
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 
 $id = (int) ($_GET['id'] ?? 0);
 $data = date('Y-m-d');

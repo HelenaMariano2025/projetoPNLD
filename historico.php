@@ -4,7 +4,7 @@ session_start();
 require_once 'php/auth.php';
 exigirAutenticacao();
 
-require 'php/conexao.php';
+require_once 'php/conexao.php';
 
 $query = "
     SELECT 

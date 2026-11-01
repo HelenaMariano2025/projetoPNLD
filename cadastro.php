@@ -2,7 +2,7 @@
 
 session_start();
 
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 require_once 'php/CadastroAdministradorRepository.php';
 require_once 'php/CadastroAdministrador.php';
 

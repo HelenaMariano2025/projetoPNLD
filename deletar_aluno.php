@@ -1,6 +1,6 @@
 <?php
 
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 
 if (isset($_GET['matricula'])) {
 

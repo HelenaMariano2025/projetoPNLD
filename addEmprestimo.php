@@ -5,7 +5,7 @@ use App\EmprestimoRepository;
 session_start();
 
 require_once __DIR__ . '/vendor/autoload.php';
-include 'php/conexao.php';
+require_once 'php/conexao.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $isbn = trim($_POST['codLivro'] ?? '');
