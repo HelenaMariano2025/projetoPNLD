@@ -209,7 +209,7 @@ class TurmaRepositoryTest extends TestCase
         $resultado = $this->createStub(mysqli_result::class);
         $resultado->method('fetch_assoc')->willReturn(['total' => '3']);
 
-        $stmtContagem = $this->createMock(mysqli_stmt::class);
+        $stmtContagem = $this->createStub(mysqli_stmt::class);
         $stmtContagem->method('get_result')->willReturn($resultado);
 
         $conn = $this->createMock(mysqli::class);
@@ -227,7 +227,7 @@ class TurmaRepositoryTest extends TestCase
         $resultado = $this->createStub(mysqli_result::class);
         $resultado->method('fetch_assoc')->willReturn(['total' => '0']);
 
-        $stmtContagem = $this->createMock(mysqli_stmt::class);
+        $stmtContagem = $this->createStub(mysqli_stmt::class);
         $stmtContagem->method('get_result')->willReturn($resultado);
 
         $stmtExclusao = $this->createMock(mysqli_stmt::class);
