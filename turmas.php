@@ -2,7 +2,8 @@
 
 use App\TurmaRepository;
 
-session_start();
+require_once 'php/http.php';
+iniciarSessao();
 
 require_once __DIR__ . '/vendor/autoload.php';
 exigirAutenticacao();
