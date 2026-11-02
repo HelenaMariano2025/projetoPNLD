@@ -10,7 +10,7 @@ exigirAutenticacao();
 require_once 'php/conexao.php';
 
 $query = "
-    SELECT 
+    SELECT
         emprestimo.codigo_emprestimo,
         livro.titulo AS livro,
         aluno.nome AS aluno,
@@ -19,11 +19,11 @@ $query = "
         emprestimo.dataDevolucao,
         devolucao.dataDevolucao AS data_devolucao_real
     FROM emprestimo
-    INNER JOIN livro 
+    INNER JOIN livro
         ON emprestimo.codigo_livro = livro.codigo
-    INNER JOIN aluno 
+    INNER JOIN aluno
         ON emprestimo.matricula_aluno = aluno.matricula
-    LEFT JOIN devolucao 
+    LEFT JOIN devolucao
         ON emprestimo.codigo_emprestimo = devolucao.codigo_emprestimo
     ORDER BY emprestimo.codigo_emprestimo DESC
 ";
@@ -44,7 +44,7 @@ $resultado = $conn->query($query);
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Historico</title> 
+  <title>Historico</title>
   <!-- Favicon -->
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
   
@@ -125,7 +125,7 @@ $resultado = $conn->query($query);
           </nav>
         </div>
       </div>
-    </header> 
+    </header>
       <section class="historico_section">
 
           <div class="container">
@@ -162,7 +162,7 @@ $resultado = $conn->query($query);
 
                       </thead>
 
-                      <tbody> 
+                      <tbody>
                         <?php
 
                         if ($resultado && $resultado->num_rows > 0) {
@@ -261,13 +261,13 @@ $resultado = $conn->query($query);
 
                                 <?php
                             }
-                        } else {  
+                        } else {
                             ?>
                             <tr>
                                 <td colspan="8">Nenhum registro encontrado.</td>
                             </tr>
                             <?php
-                        } 
+                        }
                          ?>
                       </tbody>
                       </table>
