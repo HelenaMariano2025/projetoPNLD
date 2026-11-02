@@ -3,10 +3,49 @@
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd"
+    defaultTestSuite="Projeto PNLD"
 >
-    <testsuites>
+        <testsuites>
+        <!-- Todos os testes (padrão, cobertura e Sonar) -->
         <testsuite name="Projeto PNLD">
             <directory>tests</directory>
+        </testsuite>
+
+        <!-- Só testes sem banco, usada pelo Infection -->
+        <testsuite name="unit">
+            <directory suffix="Test.php">tests</directory>
+            <exclude>tests/AdministradorRepositoryIntegrationTest.php</exclude>
+            <exclude>tests/AlunoRepositoryIntegrationTest.php</exclude>
+            <exclude>tests/CadastroAdministradorRepositoryIntegrationTest.php</exclude>
+            <exclude>tests/LivroExclusaoIntegrationTest.php</exclude>
+            <exclude>tests/LivroRepositoryIntegrationTest.php</exclude>
+            <exclude>tests/TurmaRepositoryIntegrationTest.php</exclude>
+            <exclude>tests/EditarLivroPaginaTest.php</exclude>
+            <exclude>tests/EditarTurmaPaginaTest.php</exclude>
+            <exclude>tests/EmprestimoDevolucaoFalhasTest.php</exclude>
+            <exclude>tests/EmprestimoRegistroTest.php</exclude>
+            <exclude>tests/EmprestimoRepositoryTest.php</exclude>
+            <exclude>tests/LoginPaginaTest.php</exclude>
+            <exclude>tests/TurmasPaginaTest.php</exclude>
+            <exclude>tests/EmprestimoTransacaoEspiaoTest.php</exclude>
+        </testsuite>
+
+        <!-- Testes que precisam do MySQL -->
+        <testsuite name="integration">
+            <file>tests/AdministradorRepositoryIntegrationTest.php</file>
+            <file>tests/AlunoRepositoryIntegrationTest.php</file>
+            <file>tests/CadastroAdministradorRepositoryIntegrationTest.php</file>
+            <file>tests/LivroExclusaoIntegrationTest.php</file>
+            <file>tests/LivroRepositoryIntegrationTest.php</file>
+            <file>tests/TurmaRepositoryIntegrationTest.php</file>
+            <file>tests/EditarLivroPaginaTest.php</file>
+            <file>tests/EditarTurmaPaginaTest.php</file>
+            <file>tests/EmprestimoDevolucaoFalhasTest.php</file>
+            <file>tests/EmprestimoRegistroTest.php</file>
+            <file>tests/EmprestimoRepositoryTest.php</file>
+            <file>tests/LoginPaginaTest.php</file>
+            <file>tests/TurmasPaginaTest.php</file>
+            <file>tests/EmprestimoTransacaoEspiaoTest.php</file>
         </testsuite>
     </testsuites>
 
@@ -23,5 +62,4 @@
     <php>
         <const name="PNLD_TESTES" value="true"/>
     </php>
-
 </phpunit>

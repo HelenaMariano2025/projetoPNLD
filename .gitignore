@@ -5,4 +5,7 @@ coverage.xml
 coverage-alunos.xml
 .scannerwork/
 coverage-html/
-infection.json5
+docs/mutation/infection.html
+docs/mutation/infection.log
+coverage.xml
+coverage-alunos.xml
