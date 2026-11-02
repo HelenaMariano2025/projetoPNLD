@@ -9,7 +9,7 @@ class AlunoRepository
         $this->conn = $conn;
     }
 
-    public function inserir($matricula, $nome, $datnasc, $endereco, $sexo, $email, $situacao, $codigoTurma)
+    public function inserir($dados)
     {
         $sql = "INSERT INTO aluno
                 (matricula, nome, datnasc, endereco, sexo, email, situacao, codigoTurma)
@@ -19,14 +19,14 @@ class AlunoRepository
 
         $stmt->bind_param(
             "issssssi",
-            $matricula,
-            $nome,
-            $datnasc,
-            $endereco,
-            $sexo,
-            $email,
-            $situacao,
-            $codigoTurma
+            $dados['matricula'],
+            $dados['nome'],
+            $dados['datnasc'],
+            $dados['endereco'],
+            $dados['sexo'],
+            $dados['email'],
+            $dados['situacao'],
+            $dados['codigoTurma']
         );
 
         return $stmt->execute();
@@ -50,7 +50,7 @@ class AlunoRepository
         return $stmt->get_result()->fetch_assoc();
     }
 
-    public function atualizar($matricula, $nome, $datnasc, $endereco, $sexo, $email, $situacao, $codigoTurma)
+    public function atualizar($dados)
     {
         $sql = "UPDATE aluno SET
                 nome = ?,
@@ -66,14 +66,14 @@ class AlunoRepository
 
         $stmt->bind_param(
             "ssssssii",
-            $nome,
-            $datnasc,
-            $endereco,
-            $sexo,
-            $email,
-            $situacao,
-            $codigoTurma,
-            $matricula
+            $dados['nome'],
+            $dados['datnasc'],
+            $dados['endereco'],
+            $dados['sexo'],
+            $dados['email'],
+            $dados['situacao'],
+            $dados['codigoTurma'],
+            $dados['matricula']
         );
 
         return $stmt->execute();

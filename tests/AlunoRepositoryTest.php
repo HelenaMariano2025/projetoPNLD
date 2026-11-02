@@ -54,16 +54,16 @@ class AlunoRepositoryTest extends TestCase
             ]
         );
 
-        $resultado = $repository->inserir(
-            123456,
-            'João da Silva',
-            '2000-01-01',
-            'Rua A',
-            'M',
-            'joao@example.com',
-            'ativo',
-            1
-        );
+        $resultado = $repository->inserir([
+            'matricula' => 123456,
+            'nome' => 'João da Silva',
+            'datnasc' => '2000-01-01',
+            'endereco' => 'Rua A',
+            'sexo' => 'M',
+            'email' => 'joao@example.com',
+            'situacao' => 'ativo',
+            'codigoTurma' => 1
+        ]);
 
         $this->assertTrue($resultado);
     }
@@ -156,17 +156,16 @@ class AlunoRepositoryTest extends TestCase
             ]
         );
 
-        $resultado = $repository->atualizar(
-            123456,
-            'João Atualizado',
-            '2000-01-01',
-            'Rua B',
-            'M',
-            'outro@example.com',
-            'ativo',
-            2
-        );
-
+        $resultado = $repository->atualizar([
+            'matricula' => 123456,
+            'nome' => 'João Atualizado',
+            'datnasc' => '2000-01-01',
+            'endereco' => 'Rua B',
+            'sexo' => 'M',
+            'email' => 'outro@example.com',
+            'situacao' => 'ativo',
+            'codigoTurma' => 2
+        ]);
         $this->assertTrue($resultado);
     }
 

@@ -56,16 +56,16 @@ class AlunoRepositoryIntegrationTest extends TestCase
     private function cadastrarAluno(): void
     {
         $this->assertTrue(
-            $this->repository->inserir(
-                $this->matricula,
-                'Aluno Teste ' . $this->matricula,
-                '2000-01-01',
-                'Rua de teste',
-                'F',
-                'aluno@example.com',
-                'ativo',
-                $this->codigoTurma
-            )
+            $this->repository->inserir([
+                'matricula' => $this->matricula,
+                'nome' => 'Aluno Teste ' . $this->matricula,
+                'datnasc' => '2000-01-01',
+                'endereco' => 'Rua de teste',
+                'sexo' => 'F',
+                'email' => 'aluno@example.com',
+                'situacao' => 'ativo',
+                'codigoTurma' => $this->codigoTurma
+            ])
         );
     }
 
@@ -95,16 +95,16 @@ class AlunoRepositoryIntegrationTest extends TestCase
         $this->cadastrarAluno();
 
         $this->assertTrue(
-            $this->repository->atualizar(
-                $this->matricula,
-                'Nome atualizado',
-                '2001-02-03',
-                'Outro endereço',
-                'M',
-                'atualizado@example.com',
-                'ativo',
-                $this->outraTurma
-            )
+            $this->repository->atualizar([
+               'matricula' => $this->matricula,
+               'nome' => 'Nome atualizado',
+               'datnasc' => '2001-02-03',
+               'endereco' => 'Outro endereço',
+               'sexo' => 'M',
+               'email' => 'atualizado@example.com',
+               'situacao' => 'ativo',
+               'codigoTurma' => $this->outraTurma
+            ])
         );
 
         $aluno = $this->repository->consultarPorMatricula(
