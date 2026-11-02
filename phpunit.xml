@@ -16,6 +16,7 @@
             <file>login.php</file>
             <file>turmas.php</file>
             <file>editar_turma.php</file>
+            <file>editar_livro.php</file>
         </include>
     </source>
 

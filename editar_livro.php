@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
 
 require_once __DIR__ . '/php/auth.php';
 exigirAutenticacao();
@@ -8,30 +9,19 @@ exigirAutenticacao();
 require_once __DIR__ . '/php/conexao.php';
 require_once __DIR__ . '/php/LivroRepository.php';
 require_once __DIR__ . '/php/LivroValidator.php';
-
-class FalhaConsultaLivroException extends RuntimeException
-{
-}
-
-function escapar($valor): string
-{
-    return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
-}
+require_once __DIR__ . '/php/FalhaConsultaLivroException.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 
 if (!in_array($metodo, ['GET', 'POST'], true)) {
-    header('Allow: GET, POST');
-    http_response_code(405);
-    exit('Método não permitido.');
+    encerrar('Método não permitido.', 405, ['Allow: GET, POST']);
 }
 
-$origem = $metodo === 'POST' ? INPUT_POST : INPUT_GET;
-$codigo = filter_input($origem, 'codigo', FILTER_VALIDATE_INT);
+$entrada = $metodo === 'POST' ? $_POST : $_GET;
+$codigo = filter_var($entrada['codigo'] ?? null, FILTER_VALIDATE_INT);
 
 if ($codigo === null || $codigo === false || $codigo <= 0) {
-    http_response_code(400);
-    exit('Código do livro inválido.');
+    encerrar('Código do livro inválido.', 400);
 }
 
 try {
@@ -49,14 +39,12 @@ try {
     $stmt->close();
 } catch (mysqli_sql_exception | FalhaConsultaLivroException $erro) {
     $conn->close();
-    http_response_code(500);
-    exit('Não foi possível consultar o livro.');
+    encerrar('Não foi possível consultar o livro.', 500);
 }
 
 if ($livro === null) {
     $conn->close();
-    http_response_code(404);
-    exit('Livro não encontrado.');
+    encerrar('Livro não encontrado.', 404);
 }
 
 $campos = [
@@ -117,12 +105,7 @@ if ($metodo === 'POST') {
             $conn->close();
             $_SESSION['mensagem_edicao_livro'] = 'Livro atualizado com sucesso!';
 
-            header(
-                'Location: editar_livro.php?codigo=' . $codigo,
-                true,
-                303
-            );
-            exit;
+            redirecionar('editar_livro.php?codigo=' . $codigo, 303);
         }
     }
 }
