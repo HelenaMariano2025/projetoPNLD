@@ -1,3 +1,4 @@
+---
 services:
   app:
     build: .
@@ -39,4 +40,5 @@ services:
       start_period: 30s
 
 volumes:
-  dados_mysql:
+  dados_mysql: {}
+  

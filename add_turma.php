@@ -75,12 +75,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Adicionar Turma</title> 
+  <title>Adicionar Turma</title>
   <!-- Favicon -->
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-   
-  
-  
+
+
+
 
 
   <!-- bootstrap core css -->
@@ -155,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                   <li class="nav-item ">
                     <a class="nav-link" href="turmas.php">VOLTAR <span class="sr-only">(current)</span></a>
                   </li>
-                
+
                 </ul>
               </div>
               <div class="quote_btn-container">
@@ -233,4 +233,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   </section>
   <!-- end contact section -->
 
- 
+
