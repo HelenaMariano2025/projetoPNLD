@@ -115,20 +115,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new InvalidArgumentException(ALUNO_NAO_ENCONTRADO);
         }
 
-        $argumentos = [
-            $dados['matricula'],
-            $dados['nome'],
-            $dados['datnasc'],
-            $dados['endereco'],
-            $dados['sexo'],
-            $dados['email'],
-            $dados['situacao'],
-            $dados['codigoTurma']
-        ];
 
         $salvo = $acao === 'cadastrar'
-            ? $repository->inserir(...$argumentos)
-            : $repository->atualizar(...$argumentos);
+            ? $repository->inserir($dados)
+            : $repository->atualizar($dados);
 
         if (!$salvo) {
             throw new FalhaPersistenciaAlunoException(
