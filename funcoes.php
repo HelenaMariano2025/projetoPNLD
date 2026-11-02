@@ -179,7 +179,7 @@ exigirAutenticacao();
                   <div class="col-md-6 col-lg-3">
                     <div class="box ">
                       <div class="img-box">
-                        <img src="images/addaluno.png">
+                        <img src="images/addaluno.png" alt="Aluno">
                       </div>
                       <div class="detail-box">
                         <h4>
@@ -194,7 +194,7 @@ exigirAutenticacao();
                   <div class="col-md-6 col-lg-3">
                     <div class="box ">
                       <div class="img-box">
-                        <img src="images/addturma.png" alt="">
+                        <img src="images/addturma.png" alt="Turma">
                       </div>
                       <div class="detail-box">
                         <h4>
