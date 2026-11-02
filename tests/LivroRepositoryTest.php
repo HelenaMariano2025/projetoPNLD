@@ -192,4 +192,194 @@ class LivroRepositoryTest extends TestCase
 
         $this->assertTrue($repository->excluir(42));
     }
+
+
+    public function testConsultarTodosRemoveEspacosDoTitulo(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->once())
+            ->method('bind_param')
+            ->with('s', '%Química%')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with(
+                'SELECT * FROM livro WHERE titulo LIKE ? ORDER BY titulo, codigo'
+            )
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarTodos('  Química  ')
+        );
+    }
+
+    public function testConsultarTodosIgnoraTituloComApenasEspacos(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->never())
+            ->method('bind_param');
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with('SELECT * FROM livro ORDER BY titulo, codigo')
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarTodos('   ')
+        );
+    }
+
+    public function testConsultarTodosIgnoraTituloVazio(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->never())
+            ->method('bind_param');
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with('SELECT * FROM livro ORDER BY titulo, codigo')
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarTodos('')
+        );
+    }
+
+    public function testConsultarDisponiveisRemoveEspacosDoTitulo(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->once())
+            ->method('bind_param')
+            ->with('s', '%Química%')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with($this->callback(
+                fn (string $sql): bool =>
+                    str_contains($sql, "WHERE situacao = 'ativo'")
+                    && str_contains($sql, 'AND qtde_disponivel > 0')
+                    && str_contains($sql, 'AND titulo LIKE ?')
+            ))
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarDisponiveis('  Química  ')
+        );
+    }
+
+    public function testConsultarDisponiveisIgnoraTituloComApenasEspacos(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->never())
+            ->method('bind_param');
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with($this->callback(
+                fn (string $sql): bool =>
+                    str_contains($sql, "WHERE situacao = 'ativo'")
+                    && str_contains($sql, 'AND qtde_disponivel > 0')
+                    && !str_contains($sql, 'titulo LIKE ?')
+            ))
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarDisponiveis('   ')
+        );
+    }
+
+    public function testConsultarDisponiveisIgnoraTituloVazio(): void
+    {
+        $resultadoEsperado = $this->createStub(mysqli_result::class);
+
+        $stmt = $this->createMock(mysqli_stmt::class);
+        $stmt->expects($this->never())
+            ->method('bind_param');
+        $stmt->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+        $stmt->expects($this->once())
+            ->method('get_result')
+            ->willReturn($resultadoEsperado);
+
+        $conn = $this->createMock(mysqli::class);
+        $conn->expects($this->once())
+            ->method('prepare')
+            ->with($this->callback(
+                fn (string $sql): bool =>
+                    str_contains($sql, "WHERE situacao = 'ativo'")
+                    && str_contains($sql, 'AND qtde_disponivel > 0')
+                    && !str_contains($sql, 'titulo LIKE ?')
+            ))
+            ->willReturn($stmt);
+
+        $repository = new LivroRepository($conn);
+
+        $this->assertSame(
+            $resultadoEsperado,
+            $repository->consultarDisponiveis('')
+        );
+    }
 }
