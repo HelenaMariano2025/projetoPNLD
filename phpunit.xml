@@ -27,6 +27,7 @@
             <exclude>tests/EmprestimoRepositoryTest.php</exclude>
             <exclude>tests/LoginPaginaTest.php</exclude>
             <exclude>tests/TurmasPaginaTest.php</exclude>
+            <exclude>tests/EmprestimoTransacaoEspiaoTest.php</exclude>
         </testsuite>
 
         <!-- Testes que precisam do MySQL -->
@@ -44,6 +45,7 @@
             <file>tests/EmprestimoRepositoryTest.php</file>
             <file>tests/LoginPaginaTest.php</file>
             <file>tests/TurmasPaginaTest.php</file>
+            <file>tests/EmprestimoTransacaoEspiaoTest.php</file>
         </testsuite>
     </testsuites>
 
