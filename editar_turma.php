@@ -2,9 +2,8 @@
 
 use App\TurmaRepository;
 
-const REDIRECT_TURMAS = 'Location: turmas.php';
-
-session_start();
+require_once 'php/http.php';
+iniciarSessao();
 
 require_once __DIR__ . '/vendor/autoload.php';
 exigirAutenticacao();
@@ -13,14 +12,14 @@ require_once 'php/conexao.php';
 
 $repository = new TurmaRepository($conn);
 
-$codigo = filter_input(INPUT_GET, 'codigo', FILTER_VALIDATE_INT);
+$codigo = filter_var($_GET['codigo'] ?? null, FILTER_VALIDATE_INT);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $codigo = filter_input(INPUT_POST, 'codigo', FILTER_VALIDATE_INT);
+    $codigo = filter_var($_POST['codigo'] ?? null, FILTER_VALIDATE_INT);
     $curso = trim($_POST['curso'] ?? '');
     $siglaCurso = trim($_POST['siglaCurso'] ?? '');
-    $periodo = filter_input(INPUT_POST, 'periodo', FILTER_VALIDATE_INT);
-    $serie = filter_input(INPUT_POST, 'serie', FILTER_VALIDATE_INT);
+    $periodo = filter_var($_POST['periodo'] ?? null, FILTER_VALIDATE_INT);
+    $serie = filter_var($_POST['serie'] ?? null, FILTER_VALIDATE_INT);
     $matrizCurricular = trim($_POST['matrizCurricular'] ?? '');
     $situacao = $_POST['situacao'] ?? '';
 
@@ -32,8 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         !in_array($situacao, ['ativo', 'inativo'], true)
     ) {
         $_SESSION['mensagem'] = 'Preencha os campos obrigatórios com valores válidos.';
-        header(REDIRECT_TURMAS);
-        exit();
+        redirecionar('turmas.php');
     }
 
     try {
@@ -56,14 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $conn->close();
-    header(REDIRECT_TURMAS);
-    exit();
+    redirecionar('turmas.php');
 }
 
 if (!$codigo) {
     $_SESSION['mensagem'] = 'Código de turma inválido.';
-    header(REDIRECT_TURMAS);
-    exit();
+    redirecionar('turmas.php');
 }
 
 $stmt = $conn->prepare('SELECT * FROM turma WHERE codigo = ?');
@@ -76,8 +72,7 @@ $stmt->close();
 if (!$turma) {
     $_SESSION['mensagem'] = 'Turma não encontrada.';
     $conn->close();
-    header(REDIRECT_TURMAS);
-    exit();
+    redirecionar('turmas.php');
 }
 ?>
 <!DOCTYPE html>
