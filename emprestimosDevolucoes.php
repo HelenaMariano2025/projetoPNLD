@@ -22,7 +22,7 @@ require_once 'php/conexao.php';
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Emprestimos + Devoluções</title> 
+  <title>Emprestimos + Devoluções</title>
   <!-- Favicon -->
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
   
