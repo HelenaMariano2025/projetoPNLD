@@ -156,9 +156,6 @@ a:focus {
 
 .custom_nav-container .navbar-toggler {
   outline: none;
-}
-
-.custom_nav-container .navbar-toggler {
   padding: 0;
   width: 37px;
   height: 42px;
@@ -176,8 +173,6 @@ a:focus {
   transition: all 0.3s;
   position: relative;
   border-radius: 5px;
-  -webkit-transition: all .3s;
-  transition: all .3s;
 }
 
 .custom_nav-container .navbar-toggler span::before, .custom_nav-container .navbar-toggler span::after {
@@ -324,7 +319,7 @@ a:focus {
 }
 
 .slider_section .play_btn button {
-  background-color: #539251;
+  background-color: #448042;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -356,9 +351,6 @@ a:focus {
   border-radius: 100%;
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
-}
-
-.slider_section .play_btn::before {
   z-index: 2;
   -webkit-animation: before-animation 1500ms infinite;
           animation: before-animation 1500ms infinite;
@@ -557,7 +549,7 @@ a:focus {
 
 .book_section .nice-select:after {
   content: "\f107";
-  font-family: FontAwesome;
+  font-family: FontAwesome, sans-serif;
   border: none;
   width: auto;
   height: auto;
@@ -830,6 +822,8 @@ a:focus {
   font-size: 28px;
   font-weight: bold;
   top: 50%;
+  border: 0;
+  padding: 0;
   -webkit-transform: translateY(-50%);
           transform: translateY(-50%);
 }
@@ -894,14 +888,14 @@ a:focus {
   text-transform: uppercase;
   display: inline-block;
   padding: 15px 65px;
-  background-color: #539251;
+  background-color: #448042;
   color: #ffffff;
   border-radius: 0;
   font-weight: bold;
 }
 
 .contact_section .form_container button:hover {
-  background-color: #539251;
+  background-color: #3d7a3b;
 }
 
 .contact_section .img-box img {

@@ -205,14 +205,14 @@ if ($result && $result->num_rows > 0) {
 }
 ?>
       <div class="carousel_btn-box">
-        <a class="carousel-control-prev" href="#customCarousel2" role="button" data-slide="prev">
+        <button class="carousel-control-prev" type="button" data-target="#customCarousel2" data-slide="prev">
           <i class="fa fa-angle-left" aria-hidden="true"></i>
           <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#customCarousel2" role="button" data-slide="next">
+        </button>
+        <button class="carousel-control-next" type="button" data-target="#customCarousel2" data-slide="next">
           <i class="fa fa-angle-right" aria-hidden="true"></i>
           <span class="sr-only">Next</span>
-        </a>
+        </button>
       </div>
     </div>
   </div>
