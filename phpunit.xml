@@ -15,6 +15,7 @@
             <directory>php</directory>
             <file>login.php</file>
             <file>turmas.php</file>
+            <file>editar_turma.php</file>
         </include>
     </source>
 
