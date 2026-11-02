@@ -14,6 +14,7 @@
         <include>
             <directory>php</directory>
             <file>login.php</file>
+            <file>turmas.php</file>
         </include>
     </source>
 

@@ -1,9 +1,10 @@
 <?php
 
+require_once __DIR__ . '/http.php';
+
 function exigirAutenticacao()
 {
     if (!isset($_SESSION["matricula"])) {
-        header("Location: login.php");
-        exit();
+        redirecionar("login.php");
     }
 }
