@@ -19,7 +19,7 @@ exigirAutenticacao();
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Sistema HBL Control - Controle de Livros Didáticos</title> 
+  <title>Sistema HBL Control - Controle de Livros Didáticos</title>
   <!-- Favicon -->
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
   
@@ -173,15 +173,13 @@ exigirAutenticacao();
               </div>
               <div class="container">
                 <div class="heading_container heading_center">
-                  <h2>
-                    <span></span>
-                  </h2>
+                    <h2>Tratamentos</h2>
                 </div>
                 <div class="row">
                   <div class="col-md-6 col-lg-3">
                     <div class="box ">
                       <div class="img-box">
-                        <img src="images/addaluno.png" alt="">
+                        <img src="images/addaluno.png">
                       </div>
                       <div class="detail-box">
                         <h4>

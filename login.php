@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Autenticar Administrador</title> 
+  <title>Autenticar Administrador</title>
   <!-- Favicon -->
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
   
@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body class="sub_page">
   <!-- Banner de Consentimento de Cookies -->
   <div id="cookieConsent">
-    Este site utiliza cookies para melhorar sua experiência. 
+    Este site utiliza cookies para melhorar sua experiência.
     <button id="acceptCookies" style="margin-left: 15px; background-color: #28a745; color: white; padding: 5px 10px; border: none; cursor: pointer;">Aceitar</button>
   </div>
 

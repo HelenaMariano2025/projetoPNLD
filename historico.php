@@ -1,4 +1,7 @@
 <?php
+
+const FORMATO_DATA = 'd/m/Y';
+
 session_start();
 
 require_once 'php/auth.php';
@@ -167,12 +170,12 @@ $resultado = $conn->query($query);
                             while ($row = $resultado->fetch_assoc()) {
 
                                 $dataEmprestimo = date(
-                                    "d/m/Y",
+                                    FORMATO_DATA,
                                     strtotime($row['dataEmprestimo'])
                                 );
 
                                 $dataPrevista = date(
-                                    "d/m/Y",
+                                    FORMATO_DATA,
                                     strtotime($row['dataDevolucao'])
                                 );
 
@@ -180,7 +183,7 @@ $resultado = $conn->query($query);
                                 if (!empty($row['data_devolucao_real'])) {
 
                                     $dataDevolucao = date(
-                                        "d/m/Y",
+                                        FORMATO_DATA,
                                         strtotime($row['data_devolucao_real'])
                                     );
 
