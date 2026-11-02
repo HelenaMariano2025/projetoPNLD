@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -16,11 +17,6 @@ class FalhaPersistenciaAlunoException extends RuntimeException
 $conn->set_charset('utf8mb4');
 $repository = new AlunoRepository($conn);
 
-
-function escapar($valor)
-{
-    return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
-}
 
 if (!isset($_SESSION['csrf_alunos'])) {
     $_SESSION['csrf_alunos'] = bin2hex(random_bytes(32));
