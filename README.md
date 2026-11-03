@@ -1,3 +1,5 @@
+﻿
+
 # Projeto PNLD — Controle de Livros Didáticos
 
 Sistema web desenvolvido para auxiliar na organização e distribuição de livros didáticos, centralizando o cadastro de alunos, turmas e livros, além dos registros de empréstimos e devoluções.
@@ -21,7 +23,6 @@ Facilitar a gestão dos livros didáticos por meio de uma plataforma que permita
 - Registro de devoluções.
 - Consulta ao histórico de empréstimos e devoluções.
 
-
 ## CRUD e testes
 
 ### CRUD de Alunos
@@ -30,7 +31,7 @@ O projeto utiliza operações de CRUD (Create, Read, Update e Delete) para o ger
 
 Para compreender a implementação de CRUD e sua relação com testes de software, foi utilizado como referência o tutorial:
 
-- **PHP CRUD Tutorial – Create, Read, Update & Delete**: https://www.tutorialrepublic.com/php-tutorial/php-mysql-crud-application.php
+- **PHP CRUD Tutorial – Create, Read, Update & Delete**: [https://www.tutorialrepublic.com/php-tutorial/php-mysql-crud-application.php](https://www.tutorialrepublic.com/php-tutorial/php-mysql-crud-application.php)
 
 O tutorial apresenta a implementação das operações de cadastro, consulta, atualização e exclusão utilizando PHP e MySQL. A abordagem serviu como referência para compreender a estrutura das operações CRUD no projeto e relacioná-las à criação dos testes automatizados.
 
@@ -79,7 +80,7 @@ As ferramentas devem estar instaladas e configuradas no seu sistema operacional.
    php -S localhost:8000
    ```
 
-5. Abra http://localhost:8000/index.html no navegador.
+5. Abra [http://localhost:8000/index.html](http://localhost:8000/index.html) no navegador.
 
 > Mantenha o terminal aberto durante o uso. Para encerrar o servidor, pressione Ctrl + C. A criação do banco e a configuração inicial só precisam ser feitas uma vez. Nas próximas execuções, mantenha o MySQL ativo e inicie o servidor PHP.
 
@@ -128,3 +129,20 @@ O CRUD de livros permite cadastrar, consultar, atualizar e inativar livros. A in
 Como referência para um CRUD em PHP com testes, consultei o [PHP CRUD Users API](https://github.com/jonsanchezr/php-crud-users-api). O repositório mostra a organização de uma API CRUD com MySQL, possui testes na pasta `tests` e orienta a executá-los com `composer test`. A implementação de livros deste projeto utiliza sua própria estrutura com MySQLi e PHPUnit.
 
 Os [testes de unidade](tests/LivroRepositoryTest.php) cobrem as quatro operações com mocks. O [teste de integração](tests/LivroRepositoryIntegrationTest.php) executa o CRUD com MySQL real. A [CI](.github/workflows/testes.yml) executa os testes e publica o relatório de cobertura.
+
+## Documentação e testes de software
+
+A documentação do projeto reúne informações sobre o planejamento, a execução e a avaliação dos testes de software.
+
+### Documentação
+
+- [Plano Geral de Testes](docs/plano-geral-de-testes.md)
+- [Plano de Testes das Iterações 1 e 2](docs/plano-testes-iteracoes-1-e-2.md)
+- [Plano da Iteração 1](docs/plano-iteracao-1.md)
+- [Plano da Iteração 2](docs/plano-iteracao-2.md)
+- [Relatório do Estado Atual dos Testes](docs/relatorio-estado-atual-testes.md)
+- [Cobertura Inicial](docs/cobertura-inicial.txt)
+- [Testes de Mutação](docs/testes-de-mutacao.md)
+- [Relatórios do Infection](docs/mutation/)
+- [Manual de Execução](docs/manual-de-execucao.md)
+
