@@ -97,9 +97,9 @@ exigirAutenticacao();
                   <li class="nav-item active">
                     <a class="nav-link" href="historico.php">HISTÓRICO DE EMPRESTIMOS<span class="sr-only">(current)</span></a>
                   </li>
-
-
-
+                  <li class="nav-item active">
+                    <a class="nav-link" href="cadastro.php">CADASTRAR ADMINISTRADOR<span class="sr-only">(current)</span></a>
+                  </li>
                 </ul>
               </div>
               <div class="quote_btn-container">

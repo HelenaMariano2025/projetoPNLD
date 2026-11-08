@@ -2,6 +2,9 @@
 
 session_start();
 
+require_once 'php/auth.php';
+exigirAutenticacao();
+
 require_once 'php/conexao.php';
 require_once 'php/CadastroAdministradorRepository.php';
 require_once 'php/CadastroAdministrador.php';
@@ -37,8 +40,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($mensagem === "Administrador cadastrado com sucesso.") {
             $tipoMensagem = "success";
 
-            $_SESSION['nome'] = $nome;
-            $_SESSION['matricula'] = $matricula;
         } else {
             $tipoMensagem = "danger";
         }
