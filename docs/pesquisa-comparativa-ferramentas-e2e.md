@@ -111,7 +111,7 @@ O repositório também disponibiliza imagens com Chromium, Firefox e outras opç
 
 O Selenium pode ser utilizado em pipelines de integração contínua, como GitHub Actions, desde que o servidor, o navegador e os testes sejam configurados adequadamente.
 
-**Situação no Projeto PNLD:** o projeto possui configuração Docker para executar a aplicação, mas não disponibiliza atualmente um serviço Docker Selenium configurado. O Dockerfile existente prepara o ambiente PHP, não o servidor Selenium nem o navegador utilizado na automação.
+**Situação no Projeto PNLD:** o projeto possui configuração Docker para executar a aplicação, mas não disponibiliza atualmente um serviço Docker Selenium configurado *(na data da pesquisa; o serviço foi adicionado na etapa prática, [seção 10.1](secao-pratica1-selenium.md))*. O Dockerfile existente prepara o ambiente PHP, não o servidor Selenium nem o navegador utilizado na automação.
 
 Portanto, será necessário adicionar ou executar separadamente um serviço Selenium para que os testes E2E possam controlar um navegador.
 
@@ -368,9 +368,7 @@ O resultado apresentado pelo Composer identificou a versão `1.16.0` como a vers
 
 A saída também apresentou um aviso de vulnerabilidade em uma dependência, recomendando a execução de `composer audit` para identificação do pacote afetado.
 
-É importante destacar que o comando utilizou a opção `--dry-run`, portanto a operação foi simulada. O resultado não comprova a instalação efetiva da biblioteca nem sua comunicação com um servidor Selenium.
-
-A saída do terminal deverá ser preservada como evidência da resolução de dependências realizada.
+Essa simulação foi uma verificação preliminar. A instalação efetiva da biblioteca, a configuração do servidor Selenium e a comunicação com o navegador foram realizadas na etapa prática e estão documentadas na   [seção 10.1](secao-pratica1-selenium.md).
 
 ### 6.3. Limitações identificadas
 
@@ -382,11 +380,15 @@ A biblioteca `php-webdriver/webdriver` não é mantida oficialmente pelo projeto
 
 A integração não ocorre automaticamente pela instalação da biblioteca. Existem alternativas como Steward, Symfony Panther, Laravel Dusk e Codeception, mas será necessário selecionar e configurar a abordagem adequada ao PNLD.
 
+*(resolvido na etapa prática, [seção 10](secao-pratica1-selenium.md)).*
+
 **Configuração do servidor e navegador**
 
 O Selenium WebDriver precisa se comunicar com um servidor Selenium ou com um driver de navegador compatível.
 
 O Projeto PNLD ainda não possui o serviço Docker Selenium configurado. Portanto, essa estrutura deverá ser adicionada ou executada separadamente.
+
+*(resolvido na etapa prática, [seção 10](secao-pratica1-selenium.md)).*
 
 **Estabilidade dos testes**
 
@@ -428,9 +430,9 @@ O Cypress oferece uma experiência interativa de desenvolvimento e depuração. 
 
 No contexto do Projeto PNLD, o Selenium foi selecionado considerando a possibilidade de desenvolver os testes E2E em PHP por meio da biblioteca comunitária `php-webdriver/webdriver`, favorecendo a continuidade com a tecnologia já utilizada no projeto.
 
-A verificação preliminar do ambiente identificou as extensões PHP necessárias e demonstrou que o Composer consegue resolver a versão 1.16.0 da biblioteca em uma simulação. Entretanto, ainda será necessário realizar a instalação efetiva, configurar o servidor Selenium, estabelecer a comunicação com o navegador e executar os cenários automatizados.
+A verificação preliminar do ambiente identificou as extensões PHP necessárias e demonstrou que o Composer consegue resolver a versão 1.16.0 da biblioteca em uma simulação. Essas etapas foram posteriormente concluídas: a biblioteca foi instalada, o servidor Selenium foi configurado, a comunicação com o navegador foi estabelecida e os cenários do fluxo de cadastro e login foram executados, conforme descrito na [seção 10](secao-pratica1-selenium.md).
 
-Dessa forma, a pesquisa fundamenta a escolha da ferramenta e orienta a implementação dos testes E2E, sem antecipar resultados que ainda precisam ser comprovados na etapa prática da atividade.
+Dessa forma, a pesquisa fundamenta a escolha da ferramenta e orientou a implementação dos testes E2E, cujos resultados estão apresentados na  [seção 10](secao-pratica1-selenium.md).
 
 ## 9. Referências
 
