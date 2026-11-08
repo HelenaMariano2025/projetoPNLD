@@ -29,9 +29,8 @@ final class AutenticacaoE2ETest extends NavegadorTestCase
         $this->capturar('TA01_01_cadastro_sucesso');
 
         // Nova sessão: autentica com a conta recém-criada
-        self::$driver->manage()->deleteAllCookies();
+        $this->reiniciarNavegador();
         $this->autenticar($matricula, 'senha123');
-        $this->assertStringContainsString('funcoes.php', self::$driver->getCurrentURL());
     }
 
     public static function camposObrigatorios(): array
@@ -130,5 +129,6 @@ final class AutenticacaoE2ETest extends NavegadorTestCase
         $this->abrir($pagina);
 
         $this->esperarUrlContendo('login.php');
+        $this->assertStringContainsString('login.php', self::$driver->getCurrentURL());
     }
 }

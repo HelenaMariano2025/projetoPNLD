@@ -4,9 +4,12 @@ services:
     build: .
     ports:
       - "127.0.0.1:8080:8000"
+      - "127.0.0.1:4444:4444"
+      - "127.0.0.1:7900:7900"
     volumes:
       - .:/app
     environment:
+      PHP_CLI_SERVER_WORKERS: "4"
       DB_HOST: db
       DB_USER: pnld
       DB_PASSWORD: pnld_local
@@ -40,11 +43,11 @@ services:
       start_period: 30s
 
   selenium:
-    image: selenium/standalone-chrome:latest   # Mac com chip ARM: troque por selenium/standalone-chromium
+    image: selenium/standalone-chrome:latest   
     shm_size: "2gb"
-    ports:
-      - "127.0.0.1:4444:4444"
-      - "127.0.0.1:7900:7900"
+    network_mode: "service:app"
+    depends_on:
+      - app
 
 volumes:
   dados_mysql: {}
