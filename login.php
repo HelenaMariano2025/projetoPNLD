@@ -23,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         );
 
         if ($administrador !== null) {
+            regenerarSessao();
             $_SESSION["matricula"] = $administrador["matricula"];
             $_SESSION["nome"] = $administrador["nome"];
 
@@ -177,14 +178,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 
                   </li>
                 </ul>
-              </div>
-              <div class="quote_btn-container">
-                <a href="cadastro.php">
-                  <i class="fa fa-user" aria-hidden="true"></i>
-                  <span>
-                    Cadastro
-                  </span>
-                </a>
               </div>
             </div>
           </nav>

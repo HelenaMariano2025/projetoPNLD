@@ -2,6 +2,9 @@
 require_once __DIR__ . '/php/http.php';
 iniciarSessao();
 
+require_once __DIR__ . '/php/auth.php';
+exigirAutenticacao();
+
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 require_once __DIR__ . '/php/conexao.php';
