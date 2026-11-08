@@ -3,10 +3,10 @@
 use App\EmprestimoRepository;
 
 session_start();
-exigirAutenticacao();
-
 require_once __DIR__ . '/vendor/autoload.php';
+exigirAutenticacao();
 require_once 'php/conexao.php';
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $isbn = trim($_POST['codLivro'] ?? '');
