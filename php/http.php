@@ -70,3 +70,12 @@ function definirCookie(string $nome, string $valor): void
         'samesite' => 'Lax',
     ]);
 }
+
+function regenerarSessao(): void
+{
+    if (defined('PNLD_TESTES')) {
+        return;
+    }
+
+    session_regenerate_id(true);
+}

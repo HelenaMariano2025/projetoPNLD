@@ -104,7 +104,7 @@ exigirAutenticacao();
               </div>
               <div class="quote_btn-container">
 
-                <a href="index.html">
+                <a href="logout.php">
                   <i class="fa fa-user" aria-hidden="true"></i>
                   <span>
                     Sair

@@ -23,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         );
 
         if ($administrador !== null) {
+            regenerarSessao();
             $_SESSION["matricula"] = $administrador["matricula"];
             $_SESSION["nome"] = $administrador["nome"];
 
