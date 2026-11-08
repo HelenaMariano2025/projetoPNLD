@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 session_start();
+exigirAutenticacao();
 require_once __DIR__ . '/php/conexao.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
