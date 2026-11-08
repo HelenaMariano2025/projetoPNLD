@@ -3,6 +3,7 @@
 use App\EmprestimoRepository;
 
 session_start();
+exigirAutenticacao();
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once 'php/conexao.php';
