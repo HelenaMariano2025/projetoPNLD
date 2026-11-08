@@ -112,6 +112,17 @@ final class AutenticacaoE2ETest extends NavegadorTestCase
         }
     }
 
+    public function testLogoutEncerraASessao(): void
+    {
+        $this->autenticar();
+
+        $this->abrir('/logout.php');
+        $this->esperarUrlContendo('login.php');
+
+        $this->abrir('/turmas.php');
+        $this->esperarUrlContendo('login.php');
+    }
+
     public static function paginasRestritas(): array
     {
         // Apenas páginas que não alteram dados ao serem abertas por GET.
