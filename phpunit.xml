@@ -47,6 +47,11 @@
             <file>tests/TurmasPaginaTest.php</file>
             <file>tests/EmprestimoTransacaoEspiaoTest.php</file>
         </testsuite>
+                
+                <!-- Testes de sistema (Selenium). Requer app, db e selenium rodando -->
+        <testsuite name="e2e">
+            <directory suffix="Test.php">tests-e2e</directory>
+        </testsuite>
     </testsuites>
 
     <source>
