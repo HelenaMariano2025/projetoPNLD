@@ -1,11 +1,8 @@
----
 services:
   app:
     build: .
     ports:
       - "127.0.0.1:8080:8000"
-      - "127.0.0.1:4444:4444"
-      - "127.0.0.1:7900:7900"
     volumes:
       - .:/app
     environment:
@@ -43,7 +40,7 @@ services:
       start_period: 30s
 
   selenium:
-    image: selenium/standalone-chrome:latest   
+    image: selenium/standalone-chrome:latest
     shm_size: "2gb"
     network_mode: "service:app"
     depends_on:
