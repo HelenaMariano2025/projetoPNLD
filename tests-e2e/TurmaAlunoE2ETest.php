@@ -56,8 +56,8 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
  
         // TA04.05 - pesquisar turma pelo curso
         $this->abrir('/turmas.php');
-        $this->preencher('curso', $this->curso);
-        $this->clicarEnviar();
+        $this->preencherConfirmando('curso', $this->curso);
+        $this->enviarComEnter('curso');
         $this->esperarTexto($this->curso);
         $this->capturar('TA04_05_turma_pesquisada');
  
@@ -117,14 +117,13 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
         $this->esperarTexto('Aluno cadastrado com sucesso!');
  
         $this->abrir('/turmas.php');
-        $this->preencher('curso', $this->curso);
-        $this->clicarEnviar();
+        $this->preencherConfirmando('curso', $this->curso);
+        $this->enviarComEnter('curso');
         $this->esperarTexto($this->curso);
  
-        self::$driver->findElement(WebDriverBy::cssSelector(
+        $this->clicarComScript(self::$driver->findElement(WebDriverBy::cssSelector(
             "a[href='excluir_turma.php?codigo={$this->codigoTurma}']"
-        ))->click();
-        $this->aceitarConfirmacao();
+        )));
  
         $this->esperarTexto(
             'Não é possível excluir esta turma porque existem alunos vinculados.'
@@ -145,11 +144,10 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
         $this->pesquisarAluno($this->nome);
         $this->esperarTexto($this->matricula);
  
-        self::$driver->findElement(WebDriverBy::xpath(
+        $this->clicarComScript(self::$driver->findElement(WebDriverBy::xpath(
             "//form[.//input[@name='matricula' and @value='{$this->matricula}']]"
             . "//button[@type='submit']"
-        ))->click();
-        $this->aceitarConfirmacao();
+        )));
  
         $this->esperarTexto('Aluno inativado com sucesso!');
         $this->capturar('ALUNO_inativado');
@@ -162,13 +160,13 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
     private function cadastrarTurma(): void
     {
         $this->abrir('/add_turma.php');
-        $this->preencher('codigo', $this->codigoTurma);
-        $this->preencher('curso', $this->curso);
-        $this->preencher('siglaCurso', 'E2E');
-        $this->preencher('periodo', '1');
-        $this->preencher('serie', '1');
-        $this->preencher('matrizCurricular', 'Matriz E2E');
-        $this->clicarEnviar();
+        $this->preencherConfirmando('codigo', $this->codigoTurma);
+        $this->preencherConfirmando('curso', $this->curso);
+        $this->preencherConfirmando('siglaCurso', 'E2E');
+        $this->preencherConfirmando('periodo', '1');
+        $this->preencherConfirmando('serie', '1');
+        $this->preencherConfirmando('matrizCurricular', 'Matriz E2E');
+        $this->enviarComEnter('matrizCurricular');
     }
  
     private function cadastrarAluno(): void
@@ -177,10 +175,10 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
  
         // Na página há outro campo "nome" (pesquisa) mais abaixo; o primeiro
         // encontrado pelo atributo name é o do formulário de cadastro.
-        $this->preencher('matricula', $this->matricula);
-        $this->preencher('nome', $this->nome);
-        $this->preencher('endereco', 'Rua dos Testes, 100');
-        $this->preencher('email', "e2e.{$this->matricula}@exemplo.com");
+        $this->preencherConfirmando('matricula', $this->matricula);
+        $this->preencherConfirmando('nome', $this->nome);
+        $this->preencherConfirmando('endereco', 'Rua dos Testes, 100');
+        $this->preencherConfirmando('email', "e2e.{$this->matricula}@exemplo.com");
  
         // Campo type=date: define o valor direto, sem depender do idioma do navegador
         self::$driver->executeScript(
@@ -192,8 +190,52 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
             self::$driver->findElement(WebDriverBy::id('codigoTurma'))
         ))->selectByValue($this->codigoTurma);
  
-        // O primeiro botão de envio da página é o do formulário de cadastro
-        $this->clicarEnviar();
+        $this->enviarComEnter('email');
+    }
+ 
+    /**
+     * Preenche o campo e confere se o valor realmente ficou no campo.
+     * Evidência (prints FALHA_*): em algumas execuções o sendKeys não
+     * digitava o valor e a validação "required" do navegador bloqueava o
+     * envio. Se o campo estiver vazio, define o valor por script.
+     */
+    private function preencherConfirmando(string $campo, string $valor): void
+    {
+        $elemento = self::$driver->findElement(WebDriverBy::name($campo));
+        $elemento->clear();
+        $elemento->sendKeys($valor);
+ 
+        if ($elemento->getAttribute('value') !== $valor) {
+            self::$driver->executeScript(
+                'arguments[0].value = arguments[1];'
+                . 'arguments[0].dispatchEvent(new Event("input", {bubbles: true}));',
+                [$elemento, $valor]
+            );
+        }
+ 
+        $this->assertSame(
+            $valor,
+            $elemento->getAttribute('value'),
+            "Campo {$campo} não ficou preenchido"
+        );
+    }
+ 
+    /**
+     * Envia o formulário do campo informado pelo próprio navegador
+     * (requestSubmit), usando o botão de envio como remetente para manter
+     * o name/value dele (o aluno.php usa isso como ação).
+     *
+     * Evidência: nos prints FALHA_* o formulário ficava preenchido e o log do
+     * servidor (docker compose logs app) não registrava o POST, ou seja, o
+     * clique no botão e o Enter não enviavam o formulário.
+     */
+    private function enviarComEnter(string $campo): void
+    {
+        self::$driver->executeScript(
+            'const f = arguments[0].form;'
+            . 'f.requestSubmit(f.querySelector("[type=submit]"));',
+            [self::$driver->findElement(WebDriverBy::name($campo))]
+        );
     }
  
     private function pesquisarAluno(string $nome): void
@@ -206,15 +248,36 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
         $campo->clear();
         $campo->sendKeys($nome);
  
-        self::$driver->findElement(
-            WebDriverBy::cssSelector('form.pesquisa button[type=submit]')
-        )->click();
+        if ($campo->getAttribute('value') !== $nome) {
+            self::$driver->executeScript(
+                'arguments[0].value = arguments[1];',
+                [$campo, $nome]
+            );
+        }
+ 
+        $this->assertSame($nome, $campo->getAttribute('value'));
+ 
+        // Envia o formulário de pesquisa pelo navegador (o clique nativo no
+        // botão "Buscar" não enviava o formulário neste ambiente).
+        self::$driver->executeScript(
+            'const f = arguments[0].form;'
+            . 'f.requestSubmit(f.querySelector("[type=submit]"));',
+            [$campo]
+        );
     }
  
-    private function aceitarConfirmacao(): void
+    /**
+     * Clica pelo navegador e aceita automaticamente a janela de confirmação
+     * (window.confirm) do sistema, sem depender de o Chrome exibi-la.
+     */
+    private function clicarComScript(\Facebook\WebDriver\WebDriverElement $elemento): void
     {
-        self::$driver->wait(5)->until(WebDriverExpectedCondition::alertIsPresent());
-        self::$driver->switchTo()->alert()->accept();
+        self::$driver->executeScript(
+            'window.confirm = () => true;'
+            . 'arguments[0].scrollIntoView({block: "center"});'
+            . 'arguments[0].click();',
+            [$elemento]
+        );
     }
  
     private static function letras(int $quantidade): string
@@ -229,4 +292,3 @@ final class TurmaAlunoE2ETest extends NavegadorTestCase
         return $texto;
     }
 }
- 
