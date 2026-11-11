@@ -138,9 +138,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <div class="header_bottom">
         <div class="container-fluid">
           <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" >
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
+            <a class="navbar-brand" href="funcoes.php">
+              <img src="images/White and navy simple book store logo.png" alt="Logo do sistema, ir para a página inicial">
             </a>
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -171,7 +170,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
   <!-- contact section -->
-  <section class="contact_section layout_padding-bottom">
+  <main><section class="contact_section layout_padding-bottom">
     <div class="container">
       <div class="heading_container">
         <h2><br/>
@@ -211,7 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                   <input type="text" name="matrizCurricular" placeholder="Matriz Curricular" required />
               </div>
               <div>
-                  <select name="situacao" required>
+                  <select name="situacao" aria-label="Situação da turma" required>
                       <option value="ativo">Ativo</option>
                       <option value="inativo">Inativo</option>
                   </select>
@@ -231,7 +230,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
       </div>
     </div>
-  </section>
+  </section></main>
   <!-- end contact section -->
 
 
