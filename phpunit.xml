@@ -3,9 +3,11 @@
     <testsuites>
         <testsuite name="Projeto PNLD">
             <directory>tests</directory>
+            <exclude>tests/E2E</exclude>
         </testsuite>
         <testsuite name="unit">
             <directory suffix="Test.php">tests</directory>
+            <exclude>tests/E2E</exclude>
             <exclude>tests/AdministradorRepositoryIntegrationTest.php</exclude>
             <exclude>tests/AlunoRepositoryIntegrationTest.php</exclude>
             <exclude>tests/CadastroAdministradorRepositoryIntegrationTest.php</exclude>
