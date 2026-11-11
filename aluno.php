@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 : '';
         }
 
-                $erroMatricula = AlunoValidator::validarMatricula($dados['matricula']);
+                $erroMatricula = AlunoValidador::validarMatricula($dados['matricula']);
 
         if ($erroMatricula !== null) {
             throw new InvalidArgumentException($erroMatricula);
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new InvalidArgumentException('Operação inválida.');
         }
 
-        $erroDados = AlunoValidator::validarDados($dados);
+        $erroDados = AlunoValidador::validarDados($dados);
 
         if ($erroDados !== null) {
             throw new InvalidArgumentException($erroDados);

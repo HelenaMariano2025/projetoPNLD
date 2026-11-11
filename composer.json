@@ -9,9 +9,15 @@
             "php/auth.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\E2E\\": "tests-e2e/"
+        }
+    },
     "require-dev": {
         "phpunit/phpunit": "^12.5",
-        "infection/infection": "^0.35.9"
+        "infection/infection": "^0.35.9",
+        "php-webdriver/webdriver": "^1.16"
     },
     "config": {
         "allow-plugins": {
