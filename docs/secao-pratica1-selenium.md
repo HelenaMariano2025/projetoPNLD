@@ -281,3 +281,174 @@ A implementação contribuiu para ampliar a cobertura dos testes de sistema, con
 Os testes permitiram verificar o comportamento da aplicação diante de operações válidas e inválidas, além de identificar um problema relacionado à inicialização da sessão durante o acesso à página de gerenciamento de livros.
 
 Dessa forma, o Fluxo 3 complementou os demais fluxos automatizados pelo grupo, contribuindo para a verificação das funcionalidades previstas nas histórias de usuário US05 e US06.
+
+### 10.9. Fluxo 2 — Gerenciamento de Turmas e Alunos (US03 e US04)
+
+O segundo fluxo de automação de testes de sistema contempla as histórias de usuário US03 (Gerenciar alunos) e US04 (Gerenciar turmas). A implementação foi realizada por Jaine, utilizando Selenium WebDriver, `php-webdriver` e Chrome executado em Docker.
+
+O objetivo foi automatizar o cadastro, a consulta e a pesquisa de turmas e alunos, além de verificar regras de validação e operações de gerenciamento.
+
+**Responsável:** Jaine  
+**Arquivo:** `tests-e2e/TurmaAlunoE2ETest.php`  
+**Issue:** [#46](https://github.com/HelenaMariano2025/projetoPNLD/issues/46)
+
+#### 10.9.1. Cenários implementados
+
+Os testes foram elaborados com base nos cenários de aceitação definidos em `docs/004-lista-users-stories.md`.
+
+| Cenário | Descrição | Teste |
+|---|---|---|
+| TA04.01 | Cadastrar turma | `testFluxoCompletoCadastroConsultaEPesquisa` |
+| TA04.05 | Pesquisar turma pelo curso | `testFluxoCompletoCadastroConsultaEPesquisa` |
+| TA03.01 | Cadastrar aluno vinculado a uma turma | `testFluxoCompletoCadastroConsultaEPesquisa` |
+| TA03.02 | Consultar aluno e visualizar a turma | `testFluxoCompletoCadastroConsultaEPesquisa` |
+| TA03.07 | Pesquisa de aluno sem resultado | `testFluxoCompletoCadastroConsultaEPesquisa` |
+| Regra | Recusar código de turma repetido | `testNaoPermiteTurmaComCodigoRepetido` |
+| Regra | Recusar matrícula de aluno repetida | `testNaoPermiteAlunoComMatriculaRepetida` |
+| Regra | Impedir exclusão de turma com aluno vinculado | `testNaoExcluiTurmaComAlunoVinculado` |
+| Extra | Inativar aluno | `testInativarAluno` |
+
+Cada teste utiliza dados únicos, como código, curso, matrícula e nome gerados aleatoriamente, permitindo executar a suíte várias vezes sem precisar limpar o banco de dados.
+
+#### 10.9.2. Ambiente e execução
+
+O ambiente utilizado foi composto por:
+
+| Item | Valor |
+|---|---|
+| PHP | 8.4.27 |
+| PHPUnit | 12.5.35 |
+| Biblioteca | php-webdriver |
+| Servidor Selenium | Selenium Grid 4.52.0 |
+| Navegador | Chrome 157 (`selenium/standalone-chrome`) |
+| Servidor PHP | Servidor embutido com `PHP_CLI_SERVER_WORKERS=4` |
+
+Para executar diretamente o arquivo de testes:
+
+```bash
+docker compose exec app vendor/bin/phpunit tests-e2e/TurmaAlunoE2ETest.php
+```
+
+Os testes foram executados na máquina da colega Helena. Na máquina da autora, o Docker disponibilizava aproximadamente 1,8 GB de memória, e o Chrome levou 2 minutos e 42 segundos apenas para iniciar a sessão, inviabilizando a execução local.
+
+Por esse motivo, a autora também utilizou o sistema local, sem Selenium, para reproduzir manualmente os defeitos identificados.
+
+#### 10.9.3. Problemas encontrados durante a implementação
+
+Durante o desenvolvimento, foram realizadas cinco execuções da suíte, com ajustes progressivos nos testes.
+
+| Execução | Resultado | Problema identificado |
+|---|---|---|
+| 1 | 5 testes, 5 falhas e 12 asserções | Mensagens de sucesso do cadastro de turma não eram encontradas. |
+| 2 | 5 testes, 5 falhas e 59 asserções | Os campos passaram a ser conferidos, mas o segundo envio do formulário não funcionava. |
+| 3 | 5 testes, 4 falhas e 69 asserções | O envio por `requestSubmit()` permitiu avançar no cadastro de turma, mas o cadastro de aluno apresentou um erro na aplicação. |
+| 4 | 5 testes, 2 erros, 1 falha e 81 asserções | Após a correção do erro no cadastro, restaram problemas na pesquisa e nas confirmações do navegador. |
+| 5 | 5 testes, 88 asserções e nenhuma falha | Todos os cenários foram aprovados. |
+
+**Preenchimento dos campos e envio dos formulários**
+
+Nas primeiras execuções, algumas interações do Selenium não preenchiam os campos corretamente. Em determinadas situações, a validação `required` do navegador impedia o envio.
+
+O teste passou a conferir o valor de cada campo após o preenchimento e, quando necessário, a utilizar scripts para completar os valores.
+
+Mesmo depois de corrigir o preenchimento, os formulários continuavam sem ser enviados. Os logs do servidor (`docker compose logs app`) não registravam requisições `POST` após o último `GET`.
+
+Como o ajuste `PHP_CLI_SERVER_WORKERS=4` já estava ativo e não resolveu o problema, o envio passou a ser realizado por meio de `form.requestSubmit()`.
+
+**Pesquisa de alunos**
+
+O clique no botão "Buscar" não enviava o formulário de pesquisa, fazendo com que a página continuasse exibindo todos os alunos.
+
+Isso comprometia a validação do cenário TA03.02, pois o aluno poderia aparecer na listagem mesmo sem a aplicação efetiva do filtro.
+
+O teste passou a conferir o campo de pesquisa e a enviar o formulário pelo navegador, garantindo que a consulta fosse realmente realizada.
+
+**Janelas de confirmação**
+
+As operações de exclusão de turma e inativação de aluno exibem uma confirmação do navegador (`confirm`). Os testes apresentavam `TimeoutException` ao aguardar essa confirmação.
+
+O código foi ajustado para aceitar a confirmação por script.
+
+#### 10.9.4. Defeito encontrado no sistema (BUG-01)
+
+Durante as execuções 3 e 4, foi identificado um defeito que impedia o cadastro de alunos.
+
+Ao clicar em "Cadastrar aluno", o navegador exibia o seguinte erro:
+
+```text
+Fatal error: Uncaught Error: Class "AlunoValidator" not found
+in /app/aluno.php on line 62
+```
+
+A investigação identificou que a classe estava declarada com outro nome: `AlunoValidador`, no arquivo `php/AlunoValidador.php`.
+
+O arquivo era carregado corretamente por `aluno.php`, mas duas chamadas, nas linhas 65 e 91, utilizavam o nome incorreto `AlunoValidator`.
+
+Os testes unitários de `tests/AlunoValidadorTest.php` utilizavam o nome correto e, por isso, não detectavam o problema. O teste E2E identificou o defeito porque percorreu o fluxo real de cadastro pela interface.
+
+A correção consistiu em substituir as duas chamadas de `AlunoValidator::` por `AlunoValidador::`.
+
+**Commit da correção:** `fix: corrige nome da classe AlunoValidador em aluno.php`.
+
+Após a alteração, o cadastro de alunos passou a funcionar.
+
+#### 10.9.5. Resultado final da execução
+
+Após os ajustes nos formulários, na pesquisa, nas confirmações e na correção do BUG-01, a suíte foi executada novamente:
+
+```bash
+docker compose exec app vendor/bin/phpunit tests-e2e/TurmaAlunoE2ETest.php
+```
+
+Resultado:
+
+```text
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.27
+Configuration: /app/phpunit.xml
+
+.....                                                       5 / 5 (100%)
+
+Time: 00:36.185, Memory: 20.00 MB
+
+OK (5 tests, 88 assertions)
+```
+
+Os cinco testes foram aprovados, totalizando 88 asserções, sem falhas.
+
+Também foi realizado um teste manual na máquina da autora. Com o sistema em execução local, o cadastro de turma exibiu a mensagem "Turma cadastrada com sucesso!".
+
+#### 10.9.6. Evidências
+
+As capturas de tela e os arquivos HTML gerados durante as falhas estão armazenados em `tests-e2e/evidencias/`.
+
+As evidências registram a evolução das execuções:
+
+- **Execução 1:** formulários com campos vazios ou sem mensagem de retorno.
+- **Execução 2:** campos preenchidos, mas com falha no envio subsequente.
+- **Execução 3:** formulários preenchidos, ausência de requisições `POST` nos logs e identificação do erro `AlunoValidator`.
+- **Execução 4:** cadastro de aluno funcionando, mas com falhas na pesquisa e nas confirmações.
+- **Execução 5:** aprovação dos cinco testes, com 88 asserções.
+
+#### 10.9.7. Achados sobre o sistema
+
+Além dos problemas que interferiam na execução automatizada, foram observadas algumas características da aplicação:
+
+- **BUG-01 confirmado:** `aluno.php` utilizava `AlunoValidator`, enquanto a classe existente se chamava `AlunoValidador`. Isso impedia o cadastro de alunos até a correção.
+- **Diferença entre operações:** para alunos, o sistema oferece a opção "Inativar", enquanto a US03 (TA03.05) descreve a operação como "excluir".
+- **Diferença nas mensagens:** a mensagem de sucesso do cadastro de aluno aparece após um redirecionamento, utilizando sessão. Já a mensagem de sucesso do cadastro de turma aparece na própria página.
+
+Também foram identificados pontos que precisam de investigação adicional, mas que não devem ser classificados como defeitos confirmados sem testes específicos:
+
+- `add_turma.php` e `aluno.php` aparentemente não chamavam `exigirAutenticacao()` no início da execução. É necessário verificar o acesso a essas páginas sem autenticação.
+- A opção "Sair" aparentemente apenas redirecionava para `index.html`. É necessário verificar se a sessão é realmente encerrada.
+
+#### 10.9.8. Limitações
+
+- A execução automatizada foi realizada na máquina de uma colega devido à limitação de memória da máquina da autora.
+- Os testes criam registros no banco de dados local. O sistema não exclui alunos, apenas permite inativá-los.
+- O envio dos formulários e a aceitação das confirmações são realizados por script, e não por clique real do usuário, pois as interações de clique do Selenium não funcionaram de maneira confiável nesse ambiente.
+- Dessa forma, os testes não verificam a aparência dos botões nem o aspecto visual das janelas de confirmação.
+- A hipótese de que o clique falhava devido ao layout da página, com o botão parcialmente fora da tela, não foi confirmada.
+
