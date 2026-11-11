@@ -212,3 +212,72 @@ OK (18 tests, 40 assertions).
 - A execução em integração contínua (GitHub Actions) ainda não foi implementada.
 - A causa exata da perda de digitação após o primeiro login (item 2 da seção 10.2) não foi identificada.
 - Os testes cobrem o fluxo de cadastro e login. Os fluxos de alunos e turmas e de livros e empréstimos são cobertos pelos outros integrantes.
+
+### 10.9. Fluxo 3 — Gerenciamento de livros e registro de empréstimos
+
+O terceiro fluxo de automação de testes de sistema contempla as histórias de usuário **US05 (Gerenciar livros)** e **US06 (Registrar empréstimos)**. A implementação utilizou Selenium WebDriver e PHPUnit, permitindo simular as interações de um administrador com a interface do sistema e verificar o comportamento das funcionalidades diretamente no navegador.
+
+**Cenários implementados:**
+
+Foram desenvolvidos seis testes funcionais, distribuídos entre as duas histórias de usuário, além de um teste para verificar a conexão com o servidor Selenium.
+
+| Arquivo | História | Critério | Cenário testado |
+|---|---|---|---|
+| `CadastroLivroE2ETest.php` | US05 | TA05.01 | Cadastro de um livro |
+| `EdicaoLivroE2ETest.php` | US05 | TA05.03 | Edição de um livro cadastrado |
+| `ExclusaoLivroE2ETest.php` | US05 | TA05.04 | Exclusão de um livro |
+| `EmprestimoValidoE2ETest.php` | US06 | TA06.01 | Registro de empréstimo com dados válidos |
+| `EmprestimoSemAlunoE2ETest.php` | US06 | TA06.04 | Tentativa de registro de empréstimo sem informar o aluno |
+| `EmprestimoLivroIndisponivelE2ETest.php` | US06 | TA06.06 | Tentativa de empréstimo de livro indisponível |
+| `ConexaoSeleniumTest.php` | — | — | Verificação da comunicação com o servidor Selenium |
+
+Os cenários foram elaborados para verificar tanto operações realizadas com sucesso quanto situações em que o sistema deve impedir o prosseguimento de uma operação devido à ausência de informações obrigatórias ou à indisponibilidade de um exemplar.
+
+### 10.10. Problemas encontrados durante a implementação
+
+Durante a implementação dos testes de gerenciamento de livros, foi identificado um problema na inicialização da sessão da página `livros.php`. Essa situação interferia no acesso à funcionalidade durante a execução automatizada.
+
+Após a análise, foi necessário corrigir a inicialização da sessão na página, permitindo que o fluxo de gerenciamento de livros fosse acessado corretamente pelo navegador controlado pelo Selenium.
+
+Também foram realizados ajustes nos cenários de empréstimo para contemplar diferentes condições de entrada, incluindo a ausência de aluno informado e a indisponibilidade do livro selecionado.
+
+### 10.11. Execução dos testes
+
+A execução dos testes foi realizada por meio do PHPUnit, utilizando a configuração específica da suíte E2E:
+
+```bash
+docker compose exec app vendor/bin/phpunit -c phpunit.e2e.xml --display-warnings
+```
+
+A configuração permite executar os testes utilizando o ambiente da aplicação, o banco de dados e o navegador disponibilizado pelo Selenium.
+
+### 10.12. Resultado da execução
+
+Na execução conjunta registrada, foram obtidos os seguintes resultados:
+
+```text
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.36
+Configuration: /app/phpunit.e2e.xml
+
+.......                                                             7 / 7 (100%)
+
+Time: 01:06.850, Memory: 16.00 MB
+
+OK (7 tests, 21 assertions)
+```
+
+Os sete testes foram aprovados, totalizando 21 asserções, sem falhas na execução.
+
+**Evidência visual:**
+
+![Execução dos testes E2E do Fluxo 3](../images/fluxo3-livros-emprestimos.png)
+
+### 10.13. Considerações sobre o fluxo
+
+A implementação contribuiu para ampliar a cobertura dos testes de sistema, contemplando operações relacionadas ao gerenciamento do acervo e ao registro de empréstimos.
+
+Os testes permitiram verificar o comportamento da aplicação diante de operações válidas e inválidas, além de identificar um problema relacionado à inicialização da sessão durante o acesso à página de gerenciamento de livros.
+
+Dessa forma, o Fluxo 3 complementou os demais fluxos automatizados pelo grupo, contribuindo para a verificação das funcionalidades previstas nas histórias de usuário US05 e US06.
