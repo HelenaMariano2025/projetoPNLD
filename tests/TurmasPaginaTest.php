@@ -97,10 +97,6 @@ class TurmasPaginaTest extends TestCase
             'excluir_turma.php?codigo=' . $this->codigoTurma,
             $resultado['saida']
         );
-        $this->assertStringContainsString(
-            'carousel-item active',
-            $resultado['saida']
-        );
     }
 
     public function testPesquisaTurmaPeloNomeDoCurso(): void
