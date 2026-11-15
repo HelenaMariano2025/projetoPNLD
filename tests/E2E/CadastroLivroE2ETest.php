@@ -18,7 +18,9 @@ class CadastroLivroE2ETest extends E2ETestCase
 
         $titulo = 'Livro E2E TA05.01 ' . $identificador;
 
-        // 1. Acessa a página de cadastro.
+        // 1. Realiza o login e acessa a página de cadastro.
+        $this->loginAdministrador();
+
         $this->driver->get($this->baseUrl . '/add_livro.php');
 
         // 2. Preenche os campos do formulário.
@@ -70,29 +72,14 @@ class CadastroLivroE2ETest extends E2ETestCase
             'A aplicação deveria confirmar o cadastro do livro.'
         );
 
-        // 5. Acessa a página de login.
-        $this->driver->get($this->baseUrl . '/login.php');
-
-        $this->driver->findElement(
-            WebDriverBy::name('matricula')
-        )->sendKeys('1234567890');
-
-        $campoSenha = $this->driver->findElement(
-            WebDriverBy::name('senha')
-        );
-
-        $campoSenha->sendKeys('1234567890');
-
-        $campoSenha->submit();
-
-        // 6. Pesquisa o livro cadastrado.
+        // 5. Pesquisa o livro cadastrado.
         $urlPesquisa = $this->baseUrl
             . '/livros.php?titulo='
             . urlencode($titulo);
 
         $this->driver->get($urlPesquisa);
 
-        // 7. Confirma que o livro aparece na listagem.
+        // 6. Confirma que o livro aparece na listagem.
         $this->assertStringContainsString(
             $titulo,
             $this->driver->getPageSource(),

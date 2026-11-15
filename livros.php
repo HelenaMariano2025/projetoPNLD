@@ -33,42 +33,54 @@ try {
 }
 
 $exclusao = $_GET['exclusao'] ?? '';
+
+$paginaAtiva = 'livros';
+$tituloPagina = 'Gerenciar Livros — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gerenciar livros</title>
-    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="css/bootstrap.css">
-</head>
-<body>
-    <main class="container py-5">
-        <h1>Gerenciar livros</h1>
 
-        <nav class="mb-4" aria-label="Navegação">
-            <a class="btn btn-secondary" href="funcoes.php">Home</a>
-            <a class="btn btn-primary" href="add_livro.php">Adicionar livro</a>
-        </nav>
+<main class="container my-4">
 
-        <?php if ($exclusao === 'sucesso'): ?>
-            <output class="alert alert-success d-block">
-                Livro excluído com sucesso.
-            </output>
-        <?php elseif ($exclusao === 'erro'): ?>
-            <p class="alert alert-danger" role="alert">
-                Não foi possível excluir o livro. Livros vinculados a
-                empréstimos ou devoluções não podem ser excluídos.
-            </p>
-        <?php endif; ?>
+    <section class="painel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>Gerenciar livros</h1>
+                <p class="text-muted mb-0">
+                    Consulte, pesquise e gerencie os livros do acervo didático.
+                </p>
+            </div>
 
-        <form class="mb-4" action="livros.php" method="get">
+            <a href="add_livro.php" class="btn btn-primary mt-2">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Adicionar livro
+            </a>
+        </div>
+    </section>
+
+    <?php if ($exclusao === 'sucesso'): ?>
+        <div class="alert alert-success" role="alert">
+            Livro excluído com sucesso.
+        </div>
+    <?php elseif ($exclusao === 'erro'): ?>
+        <div class="alert alert-danger" role="alert">
+            Não foi possível excluir o livro. Livros vinculados a
+            empréstimos ou devoluções não podem ser excluídos.
+        </div>
+    <?php endif; ?>
+
+    <section class="painel">
+        <h2>Livros cadastrados</h2>
+        <p class="text-muted">
+            Consulte os livros do acervo, incluindo os inativos e sem estoque.
+        </p>
+
+        <form action="livros.php" method="get" class="mb-4">
             <div class="form-group">
                 <label for="titulo">Pesquisar por título</label>
                 <input
-                    class="form-control"
                     type="text"
+                    class="form-control"
                     id="titulo"
                     name="titulo"
                     value="<?= escapar($titulo) ?>"
@@ -76,26 +88,38 @@ $exclusao = $_GET['exclusao'] ?? '';
                 >
             </div>
 
-            <button class="btn btn-primary" type="submit">Buscar</button>
-            <a class="btn btn-secondary" href="livros.php">Limpar pesquisa</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-search" aria-hidden="true"></i>
+                Buscar
+            </button>
+
+            <a href="livros.php" class="btn btn-secondary">
+                Limpar pesquisa
+            </a>
         </form>
 
         <?php if ($erroConsulta): ?>
-            <p class="alert alert-danger" role="alert">
+
+            <div class="alert alert-danger" role="alert">
                 Não foi possível consultar os livros. Tente novamente.
-            </p>
+            </div>
+
         <?php elseif ($livros === []): ?>
-            <output class="alert alert-info d-block">
+
+            <div class="alert alert-info mb-0" role="alert">
                 <?= $titulo !== ''
                     ? 'Nenhum livro encontrado para o título informado.'
                     : 'Nenhum livro cadastrado.' ?>
-            </output>
+            </div>
+
         <?php else: ?>
+
             <div class="table-responsive">
-                <table class="table table-striped table-bordered">
+                <table class="table table-hover table-striped">
                     <caption>
                         Livros do acervo, incluindo inativos e sem estoque.
                     </caption>
+
                     <thead>
                         <tr>
                             <th scope="col">ISBN</th>
@@ -109,6 +133,7 @@ $exclusao = $_GET['exclusao'] ?? '';
                             <th scope="col">Ações</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($livros as $livro): ?>
                             <tr>
@@ -120,38 +145,51 @@ $exclusao = $_GET['exclusao'] ?? '';
                                 <td><?= escapar($livro['edicao']) ?></td>
                                 <td><?= escapar($livro['situacao']) ?></td>
                                 <td><?= escapar($livro['qtde_disponivel']) ?></td>
-                                <td>
-                                    <a
-                                        class="btn btn-primary btn-sm mb-2"
-                                        href="editar_livro.php?codigo=<?= (int) $livro['codigo'] ?>"
-                                    >
-                                        Editar
-                                    </a>
 
-                                    <form
-                                        action="excluir_livro.php"
-                                        method="post"
-                                        onsubmit="return confirm('Deseja excluir permanentemente este livro?')"
-                                    >
-                                        <input
-                                            type="hidden"
-                                            name="codigo"
-                                            value="<?= (int) $livro['codigo'] ?>"
+                                <td>
+                                    <div class="d-flex flex-wrap">
+                                        <a
+                                            href="editar_livro.php?codigo=<?= (int) $livro['codigo'] ?>"
+                                            class="btn btn-primary btn-sm mr-2 mb-1"
                                         >
-                                        <button
-                                            class="btn btn-danger btn-sm"
-                                            type="submit"
+                                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                                            Editar
+                                        </a>
+
+                                        <form
+                                            action="excluir_livro.php"
+                                            method="post"
+                                            onsubmit="return confirm('Deseja excluir permanentemente este livro?')"
                                         >
-                                            Excluir
-                                        </button>
-                                    </form>
+                                            <input
+                                                type="hidden"
+                                                name="codigo"
+                                                value="<?= (int) $livro['codigo'] ?>"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-danger btn-sm mb-1"
+                                            >
+                                                <i class="fa fa-trash" aria-hidden="true"></i>
+                                                Excluir
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
+
+            <p class="text-muted mb-0">
+                Total de livros encontrados: <?= count($livros) ?>
+            </p>
+
         <?php endif; ?>
-    </main>
-</body>
-</html>
+    </section>
+
+</main>
+
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

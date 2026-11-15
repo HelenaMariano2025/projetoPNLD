@@ -1,248 +1,195 @@
 <?php
+
 session_start();
 
-require_once 'php/auth.php';
+require_once __DIR__ . '/php/auth.php';
 exigirAutenticacao();
+
+require_once __DIR__ . '/php/conexao.php';
+
+$paginaAtiva = 'inicio';
+$tituloPagina = 'Visão geral — Sistema HBL Control';
+
+$consultarTotal = static function (mysqli $conn, string $sql): ?int {
+    try {
+        $resultado = $conn->query($sql);
+
+        if ($resultado === false) {
+            return null;
+        }
+
+        $linha = $resultado->fetch_assoc();
+        $resultado->free();
+
+        return $linha !== null ? (int) $linha['total'] : null;
+    } catch (mysqli_sql_exception $e) {
+        error_log('Falha ao consultar indicador do dashboard: ' . $e->getMessage());
+        return null;
+    }
+};
+
+$totalAlunos = $consultarTotal(
+    $conn,
+    "SELECT COUNT(*) AS total FROM aluno WHERE situacao = 'ativo'"
+);
+
+$totalTurmas = $consultarTotal(
+    $conn,
+    "SELECT COUNT(*) AS total FROM turma WHERE situacao = 'ativo'"
+);
+
+$totalLivros = $consultarTotal(
+    $conn,
+    "SELECT COUNT(*) AS total FROM livro WHERE situacao = 'ativo'"
+);
+
+$totalEmprestimos = $consultarTotal(
+    $conn,
+    'SELECT COUNT(*) AS total
+     FROM emprestimo e
+     LEFT JOIN devolucao d
+       ON d.codigo_emprestimo = e.codigo_emprestimo
+     WHERE d.codigo_emprestimo IS NULL'
+);
+
+require_once __DIR__ . '/includes/cabecalho.php';
+
+$indicadores = [
+    [
+        'titulo' => 'Alunos ativos',
+        'valor' => $totalAlunos,
+        'descricao' => 'Alunos cadastrados no sistema',
+        'icone' => 'fa-users',
+        'cor' => 'alunos',
+    ],
+    [
+        'titulo' => 'Turmas ativas',
+        'valor' => $totalTurmas,
+        'descricao' => 'Turmas disponíveis para gestão',
+        'icone' => 'fa-graduation-cap',
+        'cor' => 'turmas',
+    ],
+    [
+        'titulo' => 'Livros ativos',
+        'valor' => $totalLivros,
+        'descricao' => 'Títulos cadastrados como ativos',
+        'icone' => 'fa-book',
+        'cor' => 'livros',
+    ],
+    [
+        'titulo' => 'Empréstimos em andamento',
+        'valor' => $totalEmprestimos,
+        'descricao' => 'Empréstimos sem registro de devolução',
+        'icone' => 'fa-exchange',
+        'cor' => 'emprestimos',
+    ],
+];
+
+$atalhos = [
+    [
+        'titulo' => 'Alunos',
+        'descricao' => 'Consulte e gerencie os alunos cadastrados.',
+        'href' => 'aluno.php',
+        'icone' => 'fa-users',
+    ],
+    [
+        'titulo' => 'Turmas',
+        'descricao' => 'Acesse as turmas e seus dados.',
+        'href' => 'turmas.php',
+        'icone' => 'fa-graduation-cap',
+    ],
+    [
+        'titulo' => 'Livros',
+        'descricao' => 'Consulte o acervo de livros didáticos.',
+        'href' => 'livros.php',
+        'icone' => 'fa-book',
+    ],
+    [
+        'titulo' => 'Empréstimos e devoluções',
+        'descricao' => 'Acompanhe empréstimos e registre devoluções.',
+        'href' => 'emprestimosDevolucoes.php',
+        'icone' => 'fa-exchange',
+    ],
+    [
+        'titulo' => 'Histórico',
+        'descricao' => 'Consulte o histórico de movimentações.',
+        'href' => 'historico.php',
+        'icone' => 'fa-history',
+    ],
+];
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
-
-  <title>Sistema HBL Control - Controle de Livros Didáticos</title>
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
-
-
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-
-  <!-- fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-
-  <!--owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-
-  <!-- font awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
-
-</head>
-
-<body>
-
-  <div class="hero_area">
-    <!-- header section strats -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand">
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
-
-
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav  ">
-                  <li class="nav-item active">
-                    <a class="nav-link" href="funcoes.php">HOME<span class="sr-only">(current)</span></a>
-                  </li>
-                  <li class="nav-item active">
-                    <a class="nav-link" href="historico.php">HISTÓRICO DE EMPRESTIMOS<span class="sr-only">(current)</span></a>
-                  </li>
-                  <li class="nav-item active">
-                    <a class="nav-link" href="cadastro.php">CADASTRAR ADMINISTRADOR<span class="sr-only">(current)</span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="quote_btn-container">
-
-                <a href="logout.php">
-                  <i class="fa fa-user" aria-hidden="true"></i>
-                  <span>
-                    Sair
-                  </span>
-                  <?php
-                  // Verifica se o nome do administrador está definido na sessão
-                  if (isset($_SESSION['nome'])) {
-                    echo "<p>Bem-vindo(a), " . $_SESSION['nome'] . "</p>";
-                  } else {
-                    echo "<p>Bem-vindo(a), Administrador</p>"; // Mensagem padrão caso o nome do administrador não esteja definido na sessão
-                  }
-                  ?>
-                </a>
-              </div>
+<main class="hbl-dashboard">
+    <div class="container-fluid hbl-dashboard-container">
+        <section class="hbl-dashboard-heading" aria-labelledby="dashboard-title">
+            <div>
+                <span class="hbl-eyebrow">PAINEL ADMINISTRATIVO</span>
+                <h1 id="dashboard-title">Visão geral</h1>
+                <p>Acompanhe os principais dados e acesse as áreas de gestão do Sistema HBL Control.</p>
             </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-    <!-- end header section -->
-    <!-- slider section -->
-    <section class="slider_section ">
-      <div class="dot_design">
-        <img src="images/ .png" alt="">
-      </div>
-      <div id="customCarousel1" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="container ">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="detail-box">
-                    <div class="">
+            <div class="hbl-dashboard-date">
+                <i class="fa fa-calendar-o" aria-hidden="true"></i>
+                <span><?= htmlspecialchars(date('d/m/Y'), ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+        </section>
 
-
-
-                    </div>
-                    <h1>
-                      sistema <br>
-                      <span>
-                        BHL
-                      </span>
-                    </h1>
-                    <p>
-                      Apresentamos o Sistema BHL, uma ferramenta inovadora feita sob medida para facilitar a organização dos livros didáticos no Instituto Federal de Educação, Ciência e Tecnologia do Campus Patos. Com o BHL, vamos tornar mais fácil e eficiente o controle e a distribuição desses materiais, garantindo uma gestão mais tranquila para todos.
-                    </p>
-                  </div>
+        <section class="hbl-dashboard-section" aria-labelledby="indicadores-title">
+            <div class="hbl-section-heading">
+                <div>
+                    <h2 id="indicadores-title">Resumo do sistema</h2>
+                    <p>Indicadores atualizados a partir dos registros do banco de dados.</p>
                 </div>
-                <div class="col-md-6">
-                  <div class="img-box">
-                    <img src="images/R.png" alt="">
-                  </div>
-                </div>
-              </div>
             </div>
 
+            <div class="hbl-stats-grid">
+                <?php foreach ($indicadores as $indicador): ?>
+                    <article class="hbl-stat-card">
+                        <div class="hbl-stat-top">
+                            <span class="hbl-stat-label">
+                                <?= htmlspecialchars($indicador['titulo'], ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                            <span class="hbl-stat-icon hbl-stat-icon--<?= htmlspecialchars($indicador['cor'], ENT_QUOTES, 'UTF-8') ?>">
+                                <i class="fa <?= htmlspecialchars($indicador['icone'], ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                        <strong class="hbl-stat-value">
+                            <?= $indicador['valor'] === null ? '—' : number_format($indicador['valor'], 0, ',', '.') ?>
+                        </strong>
+                        <span class="hbl-stat-description">
+                            <?= htmlspecialchars($indicador['descricao'], ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                        <?php if ($indicador['valor'] === null): ?>
+                            <span class="hbl-stat-warning">Não foi possível consultar este indicador.</span>
+                        <?php endif; ?>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
 
-            <!-- end about section -->
-
-
-            <!-- treatment section -->
-
-            <section class="treatment_section layout_padding">
-              <div class="side_img">
-                <img src="images/treatment-side-img.jpg" alt="">
-              </div>
-              <div class="container">
-                <div class="heading_container heading_center">
-                    <h2>Tratamentos</h2>
+        <section class="hbl-dashboard-section hbl-quick-access" aria-labelledby="atalhos-title">
+            <div class="hbl-section-heading">
+                <div>
+                    <h2 id="atalhos-title">Acesso rápido</h2>
+                    <p>Escolha uma área para continuar o trabalho.</p>
                 </div>
-                <div class="row">
-                  <div class="col-md-6 col-lg-3">
-                    <div class="box ">
-                      <div class="img-box">
-                        <img src="images/addaluno.png" alt="Aluno">
-                      </div>
-                      <div class="detail-box">
-                        <h4>
-                          Aluno
-                        </h4>
-                        <a href="aluno.php">
-                          Acessar
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6 col-lg-3">
-                    <div class="box ">
-                      <div class="img-box">
-                        <img src="images/addturma.png" alt="Turma">
-                      </div>
-                      <div class="detail-box">
-                        <h4>
-                          Turma
-                        </h4>
-                        <a href="turmas.php">
-                          Acessar
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6 col-lg-3">
-                    <div class="box ">
-                      <div class="img-box">
-                        <img src="images/addlivros.png" alt="">
-                      </div>
-                      <div class="detail-box">
-                        <h4>
-                          Livro
-                        </h4>
-                        <a href="livros.php">
-                          Acessar
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6 col-lg-3">
-                    <div class="box ">
-                      <div class="img-box">
-                        <img src="images/addemp.png" alt="">
-                      </div>
-                      <div class="detail-box">
-                        <h4>
-                          Empréstimos +
-                          Devoluções
-                        </h4>
-                        <a href="emprestimosDevolucoes.php">
-                          Acessar
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+            </div>
 
-            <!-- end treatment section -->
-            <!-- contact section -->
-</body>
+            <div class="hbl-shortcuts-grid">
+                <?php foreach ($atalhos as $atalho): ?>
+                    <a class="hbl-shortcut-card" href="<?= htmlspecialchars($atalho['href'], ENT_QUOTES, 'UTF-8') ?>">
+                        <span class="hbl-shortcut-icon">
+                            <i class="fa <?= htmlspecialchars($atalho['icone'], ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i>
+                        </span>
+                        <span class="hbl-shortcut-content">
+                            <strong><?= htmlspecialchars($atalho['titulo'], ENT_QUOTES, 'UTF-8') ?></strong>
+                            <span><?= htmlspecialchars($atalho['descricao'], ENT_QUOTES, 'UTF-8') ?></span>
+                        </span>
+                        <i class="fa fa-angle-right hbl-shortcut-arrow" aria-hidden="true"></i>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    </div>
+</main>
 
-</html>
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

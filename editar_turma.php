@@ -2,13 +2,14 @@
 
 use App\TurmaRepository;
 
-require_once 'php/http.php';
+require_once __DIR__ . '/php/http.php';
 iniciarSessao();
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/php/auth.php';
 exigirAutenticacao();
 
-require_once 'php/conexao.php';
+require_once __DIR__ . '/php/conexao.php';
 
 $repository = new TurmaRepository($conn);
 
@@ -31,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         !in_array($situacao, ['ativo', 'inativo'], true)
     ) {
         $_SESSION['mensagem'] = 'Preencha os campos obrigatórios com valores válidos.';
+        $conn->close();
         redirecionar('turmas.php');
     }
 
@@ -59,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if (!$codigo) {
     $_SESSION['mensagem'] = 'Código de turma inválido.';
+    $conn->close();
     redirecionar('turmas.php');
 }
 
@@ -74,99 +77,137 @@ if (!$turma) {
     $conn->close();
     redirecionar('turmas.php');
 }
+
+$paginaAtiva = 'turmas';
+$tituloPagina = 'Editar Turma — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Editar Turma</title>
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/responsive.css">
-</head>
-<body class="sub_page">
-    <div class="hero_area">
-        <header class="header_section">
-            <div class="header_bottom">
-                <div class="container-fluid">
-                    <nav class="navbar navbar-expand-lg custom_nav-container">
-                        <a class="navbar-brand" href="funcoes.php">
-                            <img src="images/White and navy simple book store logo.png" alt="Página inicial">
-                        </a>
-                        <div class="navbar-collapse">
-                            <ul class="navbar-nav">
-                                <li class="nav-item">
-                                    <a class="nav-link" href="funcoes.php">HOME</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="turmas.php">VOLTAR</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </nav>
-                </div>
-            </div>
-        </header>
-    </div>
 
-    <section class="contact_section layout_padding-bottom">
-        <div class="container">
-            <div class="heading_container">
-                <h2><br>EDITAR TURMA</h2>
-            </div>
+<main class="container my-4">
 
-            <div class="row">
-                <div class="col-md-7">
-                    <div class="form_container">
-                        <form action="editar_turma.php" method="post">
-                            <input type="hidden" name="codigo"
-                                   value="<?= (int) $turma['codigo'] ?>">
-
-                            <div>
-                                <input type="text" name="curso" placeholder="Curso"
-                                       value="<?= htmlspecialchars($turma['curso'], ENT_QUOTES, 'UTF-8') ?>"
-                                       required>
-                            </div>
-                            <div>
-                                <input type="text" name="siglaCurso" placeholder="Sigla do curso"
-                                       value="<?= htmlspecialchars($turma['siglaCurso'], ENT_QUOTES, 'UTF-8') ?>"
-                                       required>
-                            </div>
-                            <div>
-                                <input type="number" name="periodo" placeholder="Período"
-                                       value="<?= (int) $turma['periodo'] ?>"
-                                       min="1" required>
-                            </div>
-                            <div>
-                                <input type="number" name="serie" placeholder="Série"
-                                       value="<?= (int) $turma['serie'] ?>"
-                                       min="1" required>
-                            </div>
-                            <div>
-                                <input type="text" name="matrizCurricular" placeholder="Matriz curricular"
-                                       value="<?= htmlspecialchars($turma['matrizCurricular'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                       required>
-                            </div>
-                            <div>
-                                <select name="situacao" required>
-                                    <option value="ativo" <?= $turma['situacao'] === 'ativo' ? 'selected' : '' ?>>
-                                        Ativo
-                                    </option>
-                                    <option value="inativo" <?= $turma['situacao'] === 'inativo' ? 'selected' : '' ?>>
-                                        Inativo
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="btn_box">
-                                <button type="submit">Salvar alterações</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <section class="painel">
+        <h1>Editar turma</h1>
+        <p class="text-muted mb-0">
+            Atualize as informações da turma selecionada.
+        </p>
     </section>
-</body>
-</html>
-<?php $conn->close(); ?>
+
+    <section class="painel">
+
+        <div class="mb-4">
+            <h2>Dados da turma</h2>
+            <p class="text-muted mb-0">
+                Altere os campos necessários e salve as modificações.
+            </p>
+        </div>
+
+        <form action="editar_turma.php" method="post">
+
+            <input
+                type="hidden"
+                name="codigo"
+                value="<?= (int) $turma['codigo'] ?>"
+            >
+
+            <div class="form-group">
+                <label for="curso">Curso</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="curso"
+                    name="curso"
+                    value="<?= htmlspecialchars($turma['curso'], ENT_QUOTES, 'UTF-8') ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="siglaCurso">Sigla do curso</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="siglaCurso"
+                    name="siglaCurso"
+                    value="<?= htmlspecialchars($turma['siglaCurso'], ENT_QUOTES, 'UTF-8') ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="periodo">Período</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        id="periodo"
+                        name="periodo"
+                        value="<?= (int) $turma['periodo'] ?>"
+                        min="1"
+                        required
+                    >
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="serie">Série</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        id="serie"
+                        name="serie"
+                        value="<?= (int) $turma['serie'] ?>"
+                        min="1"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="matrizCurricular">Matriz curricular</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="matrizCurricular"
+                    name="matrizCurricular"
+                    value="<?= htmlspecialchars($turma['matrizCurricular'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="situacao">Situação</label>
+                <select
+                    class="form-control"
+                    id="situacao"
+                    name="situacao"
+                    required
+                >
+                    <option value="ativo" <?= $turma['situacao'] === 'ativo' ? 'selected' : '' ?>>
+                        Ativo
+                    </option>
+
+                    <option value="inativo" <?= $turma['situacao'] === 'inativo' ? 'selected' : '' ?>>
+                        Inativo
+                    </option>
+                </select>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-end mt-4">
+                <a href="turmas.php" class="btn btn-secondary mr-2 mb-2">
+                    Cancelar
+                </a>
+
+                <button type="submit" class="btn btn-primary mb-2">
+                    Salvar alterações
+                </button>
+            </div>
+
+        </form>
+    </section>
+
+</main>
+
+<?php
+$conn->close();
+require_once __DIR__ . '/includes/rodape.php';
+?>

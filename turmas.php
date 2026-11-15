@@ -2,18 +2,19 @@
 
 use App\TurmaRepository;
 
-require_once 'php/http.php';
+require_once __DIR__ . '/php/http.php';
 iniciarSessao();
 
 require_once __DIR__ . '/vendor/autoload.php';
 exigirAutenticacao();
 
-require_once 'php/conexao.php';
+require_once __DIR__ . '/php/conexao.php';
 
 $repository = new TurmaRepository($conn);
 
-$curso = trim($_GET['curso'] ?? '');
-
+$curso = isset($_GET['curso']) && is_string($_GET['curso'])
+    ? trim($_GET['curso'])
+    : '';
 
 if ($curso !== '') {
     $result = $repository->pesquisarPorCurso($curso);
@@ -21,218 +22,183 @@ if ($curso !== '') {
     $result = $repository->consultarAtivos();
 }
 
+$turmas = [];
+
+if ($result instanceof mysqli_result) {
+    $turmas = $result->fetch_all(MYSQLI_ASSOC);
+    $result->free();
+}
+
 $mensagem = $_SESSION['mensagem'] ?? '';
 unset($_SESSION['mensagem']);
+
+$paginaAtiva = 'turmas';
+$tituloPagina = 'Gerenciar Turmas — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
 
-<head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+<main class="container my-4">
 
-  <title>Turmas Disponíveis</title>
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
+    <section class="painel">
+        <h1>Gerenciar turmas</h1>
+        <p class="text-muted mb-0">
+            Consulte, pesquise e gerencie as turmas cadastradas no sistema.
+        </p>
+    </section>
 
-  <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-
-  <!-- Fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-
-  <!-- Owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-
-  <!-- Font Awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- Nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
-    integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- Datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- Responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
-
-</head>
-
-<body class="sub_page">
-  
-  <?php if ($mensagem !== ''): ?>
-      <div class="container mt-3">
-          <div class="alert alert-info" role="alert">
-              <?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?>
-          </div>
-      </div>
-  <?php endif; ?>
-
-  <div class="hero_area">
-    <!-- header section starts -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
+    <?php if ($mensagem !== ''): ?>
+        <div class="alert alert-info" role="alert">
+            <?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?>
         </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" >
-              <img src="images/White and navy simple book store logo.png" alt="">
+    <?php endif; ?>
+
+    <section class="painel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <div>
+                <h2>Turmas cadastradas</h2>
+                <p class="text-muted mb-0">
+                    Consulte as informações das turmas disponíveis.
+                </p>
+            </div>
+
+            <a href="add_turma.php" class="btn btn-primary mt-2">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Adicionar turma
             </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
+        </div>
+
+        <form action="turmas.php" method="get" class="mb-4">
+            <div class="form-group">
+                <label for="curso">Pesquisar por curso</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="curso"
+                    name="curso"
+                    value="<?= htmlspecialchars($curso, ENT_QUOTES, 'UTF-8') ?>"
+                    placeholder="Digite o nome do curso"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-search" aria-hidden="true"></i>
+                Buscar
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav  ">
-                  <li class="nav-item ">
-                    <a class="nav-link" href="funcoes.php">HOME <span class="sr-only">(current)</span></a>
-                  </li>
-                  
-                  <li class="nav-item">
-                    <a class="nav-link" href="add_turma.php">ADICIONAR TURMA</a>
-                  </li>
-                 
-                </ul>
-              </div>
+            <a href="turmas.php" class="btn btn-secondary">
+                Limpar pesquisa
+            </a>
+        </form>
+
+        <?php if ($turmas === []): ?>
+
+            <div class="alert alert-info mb-0" role="alert">
+                <?= $curso !== ''
+                    ? 'Nenhuma turma encontrada para o curso pesquisado.'
+                    : 'Nenhuma turma disponível no momento.' ?>
             </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-    <!-- end header section -->
-  </div>
 
-  <!-- Livros section -->
-<section class="client_section layout_padding">
-  <div class="container">
-    <div class="heading_container">
-      <h2>
-        <span>Turmas</span>
-      </h2>
-    </div>
-  </div>
-  <div class="container px-0">
-    <div id="customCarousel2" class="carousel  carousel-fade" data-ride="carousel">
-      <div class="carousel-inner">
-      <div class="search_container">
-      <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
-    <input type="text" name="curso" placeholder="Buscar por curso">
-    <button type="submit">Buscar</button>
-</form>
-</div>
+        <?php else: ?>
 
-<?php
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Código</th>
+                            <th scope="col">Curso</th>
+                            <th scope="col">Sigla</th>
+                            <th scope="col">Período</th>
+                            <th scope="col">Série</th>
+                            <th scope="col">Matriz curricular</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
 
-if ($result && $result->num_rows > 0) {
-    $count = 0;
+                    <tbody>
+                        <?php foreach ($turmas as $turma): ?>
+                            <tr>
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) $turma['codigo'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-    while ($row = $result->fetch_assoc()) {
-        $active_class = ($count === 0) ? 'active' : '';
+                                <td>
+                                    <?= htmlspecialchars(
+                                        $turma['curso'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-        echo "<div class='carousel-item $active_class'>";
-        echo "<div class='box'>";
-        echo "<div class='client_info'>";
-        echo "<div class='client_name'>";
-        echo "<h5>" . htmlspecialchars((string) $row['codigo'], ENT_QUOTES, 'UTF-8') . "</h5>";
-        echo "<h6>" . htmlspecialchars($row['curso'], ENT_QUOTES, 'UTF-8') .
-             " (" . htmlspecialchars($row['siglaCurso'], ENT_QUOTES, 'UTF-8') . ")</h6>";
-        echo "</div>";
-        echo "</div>";
-        echo "<p>Período: " . htmlspecialchars((string) $row['periodo'], ENT_QUOTES, 'UTF-8') .
-             ", Série: " . htmlspecialchars((string) $row['serie'], ENT_QUOTES, 'UTF-8') . "</p>";
-        echo "<p>Matriz Curricular: " .
-             htmlspecialchars($row['matrizCurricular'] ?? '', ENT_QUOTES, 'UTF-8') . "</p>";
-             $codigoTurma = (int) $row['codigo'];
+                                <td>
+                                    <?= htmlspecialchars(
+                                        $turma['siglaCurso'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-            echo "<div class='mt-3'>";
-            echo "<a class='btn btn-primary btn-sm me-2' href='editar_turma.php?codigo=" .
-                $codigoTurma . "'>Editar</a>";
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) $turma['periodo'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-            echo "<a class='btn btn-danger btn-sm' href='excluir_turma.php?codigo=" .
-                $codigoTurma .
-                "' onclick=\"return confirm('Tem certeza de que deseja excluir esta turma?')\">Excluir</a>";
-            echo "</div>";
-            echo "</div>";
-            echo "</div>";
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) $turma['serie'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-            $count++;
-    }
-} else {
-    echo "<div class='carousel-item active'>";
-    echo "<div class='box'>";
+                                <td>
+                                    <?= htmlspecialchars(
+                                        $turma['matrizCurricular'] ?? '',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-    if ($curso !== '') {
-        echo "<p>Nenhuma turma encontrada para o curso pesquisado.</p>";
-    } else {
-        echo "<p>Nenhuma turma disponível no momento.</p>";
-    }
+                                <td>
+                                    <div class="d-flex flex-wrap">
+                                        <a
+                                            href="editar_turma.php?codigo=<?= (int) $turma['codigo'] ?>"
+                                            class="btn btn-primary btn-sm mr-2 mb-1"
+                                        >
+                                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                                            Editar
+                                        </a>
 
-    echo "</div>";
-    echo "</div>";
-}
-?>
-      <div class="carousel_btn-box">
-        <button class="carousel-control-prev" type="button" data-target="#customCarousel2" data-slide="prev">
-          <i class="fa fa-angle-left" aria-hidden="true"></i>
-          <span class="sr-only">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-target="#customCarousel2" data-slide="next">
-          <i class="fa fa-angle-right" aria-hidden="true"></i>
-          <span class="sr-only">Next</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
+                                        <a
+                                            href="excluir_turma.php?codigo=<?= (int) $turma['codigo'] ?>"
+                                            class="btn btn-danger btn-sm mb-1"
+                                            onclick="return confirm('Tem certeza de que deseja excluir esta turma?')"
+                                        >
+                                            <i class="fa fa-trash" aria-hidden="true"></i>
+                                            Excluir
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
 
+            <p class="text-muted mb-0">
+                Total de turmas encontradas: <?= count($turmas) ?>
+            </p>
 
-  <!-- footer section -->
-  
-  <script src="js/jquery-3.4.1.min.js"></script>
- 
-  <script src="js/bootstrap.js"></script>
- 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js" integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
+        <?php endif; ?>
+    </section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha384-l/y5WJTphApmSlx76Ev6k4G3zxu/+19CVvn9OTKI7gs4Yu5Hm8mjpdtdr5oyhnNo" crossorigin="anonymous"></script>
+</main>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js" integrity="sha384-GDqQaUJRVoUVDdvZ7PUgCImrsuMFD+vqMpU2F81AVtXPauUySIZOHhoS1m9Azh+X" crossorigin="anonymous"></script>
-
-  <script src="js/custom.js"></script></p>
-
-</body>
-
-</html>
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

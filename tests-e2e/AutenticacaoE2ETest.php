@@ -76,7 +76,7 @@ final class AutenticacaoE2ETest extends NavegadorTestCase
         $this->preencher('senha', 'senha-errada');
         $this->clicarEnviar();
 
-        $this->esperarTexto('Matrícula ou senha inválida.');
+        $this->esperarTexto('Matrícula ou senha inválida. Verifique seus dados e tente novamente.');
         $this->assertStringNotContainsString('funcoes.php', self::$driver->getCurrentURL());
     }
 
@@ -87,7 +87,7 @@ final class AutenticacaoE2ETest extends NavegadorTestCase
         $this->preencher('senha', 'qualquer');
         $this->clicarEnviar();
 
-        $this->esperarTexto('Matrícula ou senha inválida.');
+        $this->esperarTexto('Matrícula ou senha inválida. Verifique seus dados e tente novamente.');
     }
 
     public function testTA0204CamposVaziosSaoRejeitados(): void
@@ -95,7 +95,7 @@ final class AutenticacaoE2ETest extends NavegadorTestCase
         $this->abrir('/login.php');
         $this->clicarEnviar();
 
-        $this->esperarTexto('Matrícula e senha são obrigatórias.');
+        $this->esperarTexto('Preencha sua matrícula e senha para continuar.');
     }
 
     public function testTA0205AdministradorAutenticadoAcessaTelasAdministrativas(): void

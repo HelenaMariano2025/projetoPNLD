@@ -93,7 +93,7 @@ class LoginPaginaTest extends TestCase
         ]);
 
         $this->assertStringContainsString(
-            'Matrícula e senha são obrigatórias.',
+            'Preencha sua matrícula e senha para continuar.',
             $resultado['saida']
         );
         $this->assertNull($resultado['destino']);

@@ -101,6 +101,21 @@ abstract class NavegadorTestCase extends TestCase
 
     protected function clicarEnviar(): void
     {
+        $botoesCookies = self::$driver->findElements(
+            WebDriverBy::id('acceptCookies')
+        );
+
+        if (
+            count($botoesCookies) > 0 &&
+            $botoesCookies[0]->isDisplayed()
+        ) {
+            $botoesCookies[0]->click();
+        }
+
+        self::$driver->executeScript(
+            "document.querySelectorAll('form').forEach(form => form.noValidate = true);"
+        );
+
         self::$driver
             ->findElement(WebDriverBy::cssSelector('form button[type=submit]'))
             ->click();
