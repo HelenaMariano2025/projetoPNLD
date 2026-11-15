@@ -1,19 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<phpunit
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd"
-    defaultTestSuite="Projeto PNLD"
->
-        <testsuites>
-        <!-- Todos os testes (padrão, cobertura e Sonar) -->
+<?xml version='1.0' encoding='UTF-8'?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd" defaultTestSuite="Projeto PNLD">
+    <testsuites>
         <testsuite name="Projeto PNLD">
             <directory>tests</directory>
+            <exclude>tests/E2E</exclude>
         </testsuite>
-
-        <!-- Só testes sem banco, usada pelo Infection -->
         <testsuite name="unit">
             <directory suffix="Test.php">tests</directory>
+            <exclude>tests/E2E</exclude>
             <exclude>tests/AdministradorRepositoryIntegrationTest.php</exclude>
             <exclude>tests/AlunoRepositoryIntegrationTest.php</exclude>
             <exclude>tests/CadastroAdministradorRepositoryIntegrationTest.php</exclude>
@@ -29,8 +23,6 @@
             <exclude>tests/TurmasPaginaTest.php</exclude>
             <exclude>tests/EmprestimoTransacaoEspiaoTest.php</exclude>
         </testsuite>
-
-        <!-- Testes que precisam do MySQL -->
         <testsuite name="integration">
             <file>tests/AdministradorRepositoryIntegrationTest.php</file>
             <file>tests/AlunoRepositoryIntegrationTest.php</file>
@@ -47,8 +39,11 @@
             <file>tests/TurmasPaginaTest.php</file>
             <file>tests/EmprestimoTransacaoEspiaoTest.php</file>
         </testsuite>
+        <testsuite name="e2e">
+            <directory suffix="Test.php">tests-e2e</directory>
+            <directory suffix="Test.php">tests/E2E</directory>
+        </testsuite>
     </testsuites>
-
     <source>
         <include>
             <directory>php</directory>
@@ -58,8 +53,7 @@
             <file>editar_livro.php</file>
         </include>
     </source>
-
     <php>
-        <const name="PNLD_TESTES" value="true"/>
+        <const name="PNLD_TESTES" value="true" />
     </php>
 </phpunit>
