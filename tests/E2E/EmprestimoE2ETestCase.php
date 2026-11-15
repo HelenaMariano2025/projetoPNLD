@@ -128,23 +128,6 @@ abstract class EmprestimoE2ETestCase extends E2ETestCase
         $stmt->close();
     }
 
-    protected function loginAdministrador(): void
-    {
-        $this->driver->get($this->baseUrl . '/login.php');
-
-        $this->driver->findElement(
-            WebDriverBy::name('matricula')
-        )->sendKeys('1234567890');
-
-        $this->driver->findElement(
-            WebDriverBy::name('senha')
-        )->sendKeys('1234567890');
-
-        $this->driver->findElement(
-            WebDriverBy::cssSelector('button[type="submit"]')
-        )->click();
-    }
-
     protected function abrirFormularioEmprestimo(): void
     {
         $this->driver->get($this->baseUrl . '/addEmprestimo.php');

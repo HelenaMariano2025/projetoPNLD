@@ -59,6 +59,9 @@ class EdicaoLivroE2ETest extends E2ETestCase
         $stmt->close();
         $conn->close();
 
+        // Realiza o login antes de acessar a página de edição.
+        $this->loginAdministrador();
+
         // Acessa a página de edição do livro.
         $this->driver->get(
             $this->baseUrl . '/editar_livro.php?codigo=' . $this->codigoLivro
