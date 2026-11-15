@@ -50,10 +50,7 @@ jobs:
       - name: Preparar banco de testes
         env:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
-          mysql -h 127.0.0.1 -u pnld -p"$MYSQL_PASSWORD" SistemaHBL < sql/bancoPNLD.sql
+        run: mysql -h 127.0.0.1 -u pnld -p"$MYSQL_PASSWORD" SistemaHBL < sql/bancoPNLD.sql
 
       - name: Executar testes e cobertura
         env:
