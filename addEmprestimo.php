@@ -1,23 +1,24 @@
 <?php
 
-use App\EmprestimoRepository;
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
 
-session_start();
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/php/auth.php';
 exigirAutenticacao();
-require_once 'php/conexao.php';
 
+require_once __DIR__ . '/php/conexao.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isbn = trim($_POST['codLivro'] ?? '');
     $dataEmprestimo = $_POST['dataEmprestimo'] ?? '';
     $matricula = trim($_POST['matricula'] ?? '');
     $matriculaAdm = $_SESSION['matricula'] ?? null;
 
     if (!validarIdLivro($isbn) || !validarEmprestimo($matricula, $isbn)) {
-        $_SESSION['mensagem'] = "Preencha corretamente o livro e a matrícula do aluno.";
+        $_SESSION['mensagem'] = 'Preencha corretamente o livro e a matrícula do aluno.';
     } elseif (empty($matriculaAdm)) {
-        $_SESSION['mensagem'] = "Administrador não autenticado.";
+        $_SESSION['mensagem'] = 'Administrador não autenticado.';
     } else {
         $stmt = $conn->prepare(
             'SELECT codigo, qtde_disponivel
@@ -26,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         );
 
         if ($stmt === false) {
-            $_SESSION['mensagem'] = "Erro ao consultar o livro.";
+            $_SESSION['mensagem'] = 'Erro ao consultar o livro.';
         } else {
             $stmt->bind_param('s', $isbn);
             $stmt->execute();
@@ -34,12 +35,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $resultado = $stmt->get_result();
 
             if ($resultado->num_rows === 0) {
-                $_SESSION['mensagem'] = "Livro não encontrado.";
+                $_SESSION['mensagem'] = 'Livro não encontrado.';
             } else {
                 $livro = $resultado->fetch_assoc();
 
                 if (!podeEmprestar((int) $livro['qtde_disponivel'])) {
-                    $_SESSION['mensagem'] = "Não há exemplares disponíveis para empréstimo.";
+                    $_SESSION['mensagem'] = 'Não há exemplares disponíveis para empréstimo.';
                 } else {
                     $codLivro = (int) $livro['codigo'];
                     $devolucao = calcularDataDevolucao($dataEmprestimo);
@@ -55,9 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     );
 
                     if ($sucesso) {
-                        $_SESSION['mensagem'] = "Livro emprestado com sucesso!";
+                        $_SESSION['mensagem'] = 'Livro emprestado com sucesso!';
                     } else {
-                        $_SESSION['mensagem'] = "Erro ao registrar o empréstimo.";
+                        $_SESSION['mensagem'] = 'Erro ao registrar o empréstimo.';
                     }
                 }
             }
@@ -68,170 +69,90 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $conn->close();
 }
+
+$paginaAtiva = 'emprestimos';
+$tituloPagina = 'Adicionar Empréstimo — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
+
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
+<main class="container my-4">
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+    <section class="painel">
+        <h1>Adicionar empréstimo</h1>
+        <p class="text-muted mb-0">
+            Preencha os dados abaixo para registrar um novo empréstimo de livro.
+        </p>
+    </section>
 
-  <title>Adicionar Emprestimo de Livro</title>
+    <section class="painel">
 
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <link href="css/style.css" rel="stylesheet" />
-  <link href="css/responsive.css" rel="stylesheet" />
-</head>
-
-<body class="sub_page">
-
-  <div class="hero_area">
-
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
-            </a>
-
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
-            </a>
-
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
+        <div class="mb-4">
+            <h2>Dados do empréstimo</h2>
+            <p class="text-muted mb-0">
+                Informe o livro, a data do empréstimo e a matrícula do aluno.
+            </p>
         </div>
-      </div>
 
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container">
-            <a class="navbar-brand">
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
-
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav">
-                  <li class="nav-item">
-                    <a class="nav-link" href="funcoes.php">HOME <span class="sr-only">(current)</span></a>
-                  </li>
-
-                  <li class="nav-item">
-                    <a class="nav-link" href="emprestimosDevolucoes.php">VOLTAR <span class="sr-only">(current)</span></a>
-                  </li>
-                </ul>
-              </div>
-
-              <div class="quote_btn-container">
-              </div>
+        <?php if (isset($_SESSION['mensagem'])): ?>
+            <div class="alert alert-info" role="alert">
+                <?= htmlspecialchars($_SESSION['mensagem'], ENT_QUOTES, 'UTF-8') ?>
             </div>
-          </nav>
-        </div>
-      </div>
-    </header>
+            <?php unset($_SESSION['mensagem']); ?>
+        <?php endif; ?>
 
-  </div>
+        <form action="addEmprestimo.php" method="post">
 
-  <section class="contact_section layout_padding-bottom">
-    <div class="container">
-
-      <div class="heading_container">
-        <h2><br/>
-          Adicionar Emprestimo de Livro
-        </h2>
-      </div>
-
-      <div class="row">
-
-        <div class="col-md-7">
-          <div class="form_container">
-
-            <?php
-            if (isset($_SESSION['mensagem'])) {
-                echo "<p>" . htmlspecialchars($_SESSION['mensagem']) . "</p>";
-                unset($_SESSION['mensagem']);
-            }
-            ?>
-
-            <form action="addEmprestimo.php" method="post">
-
-              <div>
+            <div class="form-group">
+                <label for="codLivro">Código do livro (ISBN)</label>
                 <input
-                  type="number"
-                  name="codLivro"
-                  placeholder="Código do Livro"
-                  required
-                />
-              </div>
+                    type="number"
+                    class="form-control"
+                    id="codLivro"
+                    name="codLivro"
+                    placeholder="Informe o ISBN do livro"
+                    required
+                >
+            </div>
 
-              <div>
+            <div class="form-group">
+                <label for="dataEmprestimo">Data do empréstimo</label>
                 <input
-                  type="date"
-                  name="dataEmprestimo"
-                  placeholder="Data de Emprestimo"
-                  value="<?= date("Y-m-d") ?>"
-                  required
-                />
-              </div>
+                    type="date"
+                    class="form-control"
+                    id="dataEmprestimo"
+                    name="dataEmprestimo"
+                    value="<?= date('Y-m-d') ?>"
+                    required
+                >
+            </div>
 
-              <div>
+            <div class="form-group">
+                <label for="matricula">Matrícula do aluno</label>
                 <input
-                  type="number"
-                  name="matricula"
-                  placeholder="Matricula Aluno"
-                  required
-                />
-              </div>
+                    type="number"
+                    class="form-control"
+                    id="matricula"
+                    name="matricula"
+                    placeholder="Informe a matrícula do aluno"
+                    required
+                >
+            </div>
 
-              <div class="btn_box">
-                <button type="submit">
-                  Adicionar
+            <div class="d-flex flex-wrap justify-content-end mt-4">
+                <a href="emprestimosDevolucoes.php" class="btn btn-secondary mr-2 mb-2">
+                    Cancelar
+                </a>
+
+                <button type="submit" class="btn btn-primary mb-2">
+                    Registrar empréstimo
                 </button>
-              </div>
+            </div>
 
-            </form>
+        </form>
+    </section>
 
-          </div>
-        </div>
+</main>
 
-        <div class="col-md-5">
-          <div class="img-box">
-            <img src="images/.png" alt="">
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-</body>
-
-</html>
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

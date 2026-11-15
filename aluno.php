@@ -194,87 +194,15 @@ foreach ($alunos as $indice => $aluno) {
 
 $mensagem = $_SESSION['mensagem_alunos'] ?? '';
 unset($_SESSION['mensagem_alunos']);
+
+$paginaAtiva = 'alunos';
+$tituloPagina = 'Gerenciar Alunos — Sistema HBL Control';
+require_once __DIR__ . '/includes/cabecalho.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gerenciar alunos — HBL Control</title>
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <style>
-        body {
-            background: #f5f5f5;
-        }
-
-        main {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-
-        .painel {
-            background: white;
-            padding: 24px;
-            margin-bottom: 24px;
-            border-radius: 8px;
-        }
-
-        .campos {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .botoes,
-        .pesquisa {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 18px;
-        }
-
-        .tabela {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-            vertical-align: top;
-        }
-
-        .acoes form {
-            display: inline-block;
-            margin-top: 6px;
-        }
-    </style>
-</head>
-<body>
-<main>
+<main class="container my-4">
     <div class="painel">
         <h1>Gerenciar alunos</h1>
-        <a href="funcoes.php">Voltar para a página inicial</a>
+        <p class="text-muted mb-0">Cadastre, consulte e gerencie os alunos vinculados às turmas do PNLD.</p>
     </div>
 
     <?php if ($mensagem !== ''): ?>
@@ -365,7 +293,7 @@ unset($_SESSION['mensagem_alunos']);
                         <option value="">Selecione uma turma</option>
                         <?php foreach ($turmas as $turma): ?>
                             <option value="<?= escapar($turma['codigo']) ?>"
-                                <?= (string) $dados['codigoTurma'] ===
+                                 <?= (string) $dados['codigoTurma'] ===
                                     (string) $turma['codigo'] ? 'selected' : '' ?>>
                                 <?= escapar($turma['codigo']) ?>
                                 — <?= escapar($turma['curso']) ?>
@@ -404,8 +332,8 @@ unset($_SESSION['mensagem_alunos']);
         <?php if (!$alunos): ?>
             <p>Nenhum aluno encontrado.</p>
         <?php else: ?>
-            <div class="tabela">
-                <table>
+            <div class="tabela table-responsive">
+                <table class="table table-hover table-striped">
                     <caption>Alunos ativos e suas respectivas turmas</caption>
                     <thead>
                         <tr>
@@ -434,7 +362,7 @@ unset($_SESSION['mensagem_alunos']);
                                 </td>
                                 <td class="acoes">
                                     <a href="aluno.php?editar=<?= escapar($aluno['matricula']) ?>"
-                                       class="btn btn-primary">
+                                       class="btn btn-primary btn-sm">
                                         Editar
                                     </a>
 
@@ -445,7 +373,7 @@ unset($_SESSION['mensagem_alunos']);
                                         <input type="hidden" name="acao" value="inativar">
                                         <input type="hidden" name="matricula"
                                                value="<?= escapar($aluno['matricula']) ?>">
-                                        <button type="submit" class="btn btn-danger">
+                                        <button type="submit" class="btn btn-danger btn-sm">
                                             Inativar
                                         </button>
                                     </form>
@@ -458,5 +386,4 @@ unset($_SESSION['mensagem_alunos']);
         <?php endif; ?>
     </section>
 </main>
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

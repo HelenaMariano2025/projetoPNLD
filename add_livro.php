@@ -3,6 +3,7 @@
 require_once __DIR__ . '/php/http.php';
 iniciarSessao();
 
+require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/php/auth.php';
 exigirAutenticacao();
 
@@ -67,27 +68,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$paginaAtiva = 'livros';
+$tituloPagina = 'Adicionar Livro — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
+
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Adicionar livro</title>
-    <link rel="stylesheet" href="css/bootstrap.css">
-</head>
-<body>
-    <main class="container py-5">
+
+<main class="container my-4">
+
+    <section class="painel">
         <h1>Adicionar livro</h1>
-        <p><a href="livros.php">Voltar para livros</a></p>
+        <p class="text-muted mb-0">
+            Preencha os dados abaixo para cadastrar um novo livro no acervo.
+        </p>
+    </section>
+
+    <section class="painel">
+
+        <div class="mb-4">
+            <h2>Dados do livro</h2>
+            <p class="text-muted mb-0">
+                Informe os dados bibliográficos e a quantidade disponível.
+            </p>
+        </div>
 
         <?php if ($mensagem !== ''): ?>
-            <output class="alert alert-info d-block">
+            <div class="alert alert-info" role="alert">
                 <?= escapar($mensagem) ?>
-            </output>
+            </div>
         <?php endif; ?>
 
         <form action="add_livro.php" method="post">
+
             <div class="form-group">
                 <label for="isbn">ISBN</label>
                 <input
@@ -141,18 +155,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 >
             </div>
 
-            <div class="form-group">
-                <label for="ano">Ano</label>
-                <input
-                    class="form-control"
-                    type="number"
-                    id="ano"
-                    name="ano"
-                    min="1"
-                    max="2147483647"
-                    value="<?= escapar($dados['ano']) ?>"
-                    required
-                >
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="ano">Ano</label>
+                    <input
+                        class="form-control"
+                        type="number"
+                        id="ano"
+                        name="ano"
+                        min="1"
+                        max="2147483647"
+                        value="<?= escapar($dados['ano']) ?>"
+                        required
+                    >
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="edicao">Edição</label>
+                    <input
+                        class="form-control"
+                        type="number"
+                        id="edicao"
+                        name="edicao"
+                        min="1"
+                        max="2147483647"
+                        value="<?= escapar($dados['edicao']) ?>"
+                        required
+                    >
+                </div>
             </div>
 
             <div class="form-group">
@@ -180,20 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-group">
-                <label for="edicao">Edição</label>
-                <input
-                    class="form-control"
-                    type="number"
-                    id="edicao"
-                    name="edicao"
-                    min="1"
-                    max="2147483647"
-                    value="<?= escapar($dados['edicao']) ?>"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
                 <label for="qtde_disponivel">Quantidade disponível</label>
                 <input
                     class="form-control"
@@ -207,10 +223,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 >
             </div>
 
-            <button class="btn btn-primary" type="submit">
-                Adicionar livro
-            </button>
+            <div class="d-flex flex-wrap justify-content-end mt-4">
+                <a href="livros.php" class="btn btn-secondary mr-2 mb-2">
+                    Cancelar
+                </a>
+
+                <button class="btn btn-primary mb-2" type="submit">
+                    Cadastrar livro
+                </button>
+            </div>
+
         </form>
-    </main>
-</body>
-</html>
+    </section>
+
+</main>
+
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>
