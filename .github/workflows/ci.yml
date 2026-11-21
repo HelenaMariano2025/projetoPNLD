@@ -1,0 +1,135 @@
+name: CI/CD Pipeline & Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'task/**'
+      - 'demo/**'
+      - 'feat/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: 1. CI - Linter, Testes e Cobertura (Quality Gate)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: SistemaHBL
+          MYSQL_USER: pnld
+          MYSQL_PASSWORD: pnldpassword
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    steps:
+      - name: Baixar Código do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.4 com Extensões e Xdebug
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mysqli, pdo_mysql, mbstring, dom, xml, xmlwriter
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Cache de Dependências do Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Instalar Dependências do Projeto
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Verificação Estática de Sintaxe (Linter)
+        run: |
+          echo "Executando checagem de sintaxe dos arquivos PHP..."
+          find . -name "*.php" -not -path "./vendor/*" -exec php -l {} +
+
+      - name: Preparar Banco de Dados de Testes
+        run: |
+          sudo apt-get update && sudo apt-get install -y mysql-client
+          mysql -h 127.0.0.1 -u pnld -ppnldpassword SistemaHBL < sql/bancoPNLD.sql
+
+      - name: Executar Suíte de Testes e Cobertura de Código (Quality Gate)
+        env:
+          XDEBUG_MODE: coverage
+          DB_HOST: 127.0.0.1
+          DB_USER: pnld
+          DB_PASSWORD: pnldpassword
+          DB_NAME: SistemaHBL
+        run: |
+          vendor/bin/phpunit --configuration phpunit.xml --coverage-text --coverage-clover coverage.xml
+
+      - name: Publicar Relatório de Cobertura (Artefato)
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-cobertura
+          path: coverage.xml
+          if-no-files-found: error
+
+  cd:
+    name: 2. CD - Deploy Contínuo em Nuvem
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Disparar Deploy Automatizado (Render Deploy Hook)
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            echo "Disparando deploy na nuvem via Webhook seguro..."
+            curl -f -X POST "$RENDER_DEPLOY_HOOK"
+          else
+            echo "Aviso: RENDER_DEPLOY_HOOK não configurado em GitHub Secrets."
+          fi
+
+  smoke-tests:
+    name: 3. Smoke Testing Pós-Deploy (/health)
+    needs: cd
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validar Endpoint de Integridade (/health)
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          if [ -z "$APP_BASE_URL" ]; then
+            echo "Aviso: APP_BASE_URL não configurado em GitHub Secrets. Pulando teste de fumaça."
+            exit 0
+          fi
+          URL="${APP_BASE_URL}/health"
+          echo "Aguardando estabilização da aplicação em: $URL"
+          sleep 25
+          SUCCESS=false
+          for i in {1..10}; do
+            echo "Tentativa $i: requisitando $URL..."
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+            echo "Código HTTP retornado: $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "Smoke test aprovado: Aplicação operacional e respondendo status 200 OK!"
+              SUCCESS=true
+              break
+            fi
+            sleep 10
+          done
+          if [ "$SUCCESS" = false ]; then
+            echo "Falha no Smoke Test: Endpoint de integridade não respondeu HTTP 200."
+            exit 1
+          fi
