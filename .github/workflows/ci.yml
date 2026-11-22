@@ -57,12 +57,13 @@ jobs:
       - name: Verificação Estática de Sintaxe (Linter)
         run: |
           echo "Executando checagem de sintaxe dos arquivos PHP..."
-          find . -name "*.php" -not -path "./vendor/*" -exec php -l {} +
+          find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \;
 
       - name: Preparar Banco de Dados de Testes
         run: |
-          sudo apt-get update && sudo apt-get install -y mysql-client
-          mysql -h 127.0.0.1 -u pnld -ppnldpassword SistemaHBL < sql/bancoPNLD.sql
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client || sudo apt-get install -y mysql-client
+          mysql -h 127.0.0.1 -P 3306 -u pnld -ppnldpassword SistemaHBL < sql/bancoPNLD.sql
 
       - name: Executar Suíte de Testes e Cobertura de Código (Quality Gate)
         env:
