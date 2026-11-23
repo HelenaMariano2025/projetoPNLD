@@ -105,7 +105,11 @@ class HistoricoPaginaTest extends TestCase
         $_SESSION = $sessao;
 
         $conn = $this->conn;
-        
+
+        if (!defined('TESTE_PAGINA_HISTORICO')) {
+            define('TESTE_PAGINA_HISTORICO', true);
+        }
+
         $destino = null;
         ob_start();
 
