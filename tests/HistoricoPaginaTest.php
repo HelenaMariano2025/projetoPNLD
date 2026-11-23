@@ -104,6 +104,8 @@ class HistoricoPaginaTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SESSION = $sessao;
 
+        $conn = $this->conn;
+        
         $destino = null;
         ob_start();
 
