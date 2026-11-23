@@ -74,9 +74,9 @@ A terceira iteração seguirá o mesmo modelo de organização, contemplando as 
 | ---------------------- | ---------------------------- | ---------------------------- | ---------------------------- | ---------------------------- |
 | **US07**               | Isabelle Cavalcanti da Silva | Jaine Souza da Luz           | Helena Dantas Mariano        | Isabelle Cavalcanti da Silva |
 | **US08**               | Helena Dantas Mariano        | Isabelle Cavalcanti da Silva | Jaine Souza da Luz           | Helena Dantas Mariano        |
-| **Próxima User Story** | Jaine Souza da Luz           | Helena Dantas Mariano        | Isabelle Cavalcanti da Silva | Jaine Souza da Luz           |
+| **US09**               | Jaine Souza da Luz           | Helena Dantas Mariano        | Isabelle Cavalcanti da Silva | Jaine Souza da Luz           |
 
-> A terceira User Story da Iteração 3 será definida conforme o planejamento final do projeto e a quantidade de User Stories estabelecida para o desenvolvimento.
+> A definição da **US09** consolida o planejamento final do projeto com 9 User Stories completas, garantindo a cota de **3 histórias por integrante** em cada papel técnico da equipe (3 como Analista, 3 como Desenvolvedor, 3 como Revisor e 3 como Testador/QA).
 
 ### Atividades previstas
 

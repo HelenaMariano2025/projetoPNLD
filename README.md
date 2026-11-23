@@ -2,6 +2,9 @@
 
 # Projeto PNLD — Controle de Livros Didáticos
 
+[![CI/CD Pipeline & Quality Gate](https://github.com/HelenaMariano2025/projetoPNLD/actions/workflows/ci.yml/badge.svg)](https://github.com/HelenaMariano2025/projetoPNLD/actions/workflows/ci.yml)
+[![Quality Gate](https://img.shields.io/badge/SonarQube-Quality%20Gate%20Passed-brightgreen)](http://labens.dct.ufrn.br/sonarqube/dashboard?id=pnldkey)
+
 Sistema web desenvolvido para auxiliar na organização e distribuição de livros didáticos, centralizando o cadastro de alunos, turmas e livros, além dos registros de empréstimos e devoluções.
 
 O projeto é apresentado na aplicação como **HBL Control / Sistema BHL**, com foco no controle de livros didáticos do Instituto Federal, Campus Patos.
@@ -136,6 +139,9 @@ A documentação do projeto reúne informações sobre o planejamento, a execuç
 
 ### Documentação
 
+- [Relatório Técnico de DevOps, CI/CD e Smoke Testing](docs/relatorio-ci-cd.md)
+- [Lista de User Stories (US01 a US09)](docs/004-lista-users-stories.md)
+- [Plano de Iterações Geral](docs/plano-iteracoes-geral.md)
 - [Plano Geral de Testes](docs/plano-geral-de-testes.md)
 - [Plano de Testes das Iterações 1 e 2](docs/plano-testes-iteracoes-1-e-2.md)
 - [Plano da Iteração 1](docs/plano-iteracao-1.md)

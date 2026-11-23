@@ -331,6 +331,43 @@ Os testes de aceitação originais foram mantidos como critérios de validação
 | TA08.04 | Consultar o histórico sem possuir registros de empréstimos. O sistema deve informar que não existem registros disponíveis |
 | TA08.05 | Verificar um registro de empréstimo no histórico. O sistema deve apresentar as informações relacionadas ao aluno, exemplar, data de empréstimo e situação da devolução, quando disponíveis |
 
+### US09 — Encerrar sessão de administrador
+
+| Campo | Valor |
+| --- | --- |
+| Story | Como administrador autenticado, quero encerrar minha sessão no sistema de forma segura para garantir que outros usuários não acessem funcionalidades e dados administrativos em computadores compartilhados |
+| Prioridade | Essencial — P1 |
+| Requisitos envolvidos | RF2, RNF4 e RNF03 |
+| Estimativa | 4h |
+| Tempo gasto real | 3h |
+| Tamanho funcional | Pequeno |
+| Analista | Jaine |
+| Desenvolvedor | Helena |
+| Revisor | Isabelle |
+| Testador | Jaine |
+
+#### Requisitos Internos
+
+| ID | Descrição | Prioridade |
+| --- | --- | --- |
+| RF2 | Restringir o acesso às funcionalidades administrativas mediante controle de autenticação ativa | Alta |
+| RNF4 | Garantir a segurança das informações acadêmicas, invalidando credenciais no encerramento da sessão | Alta |
+| RNF03 | Assegurar que estações compartilhadas não mantenham acesso após a saída do administrador | Alta |
+
+#### Dependências
+
+- Mecanismo de autenticação e sessão de administrador previamente ativo (US02).
+
+#### Critérios de Aceitação (alto nível)
+
+| Código | Descrição |
+| --- | --- |
+| TA09.01 | Na barra de navegação de qualquer página administrativa, clicar na opção "Sair" (ou acessar `/logout.php`). O sistema deve invalidar a sessão ativa no servidor |
+| TA09.02 | O sistema deve esvaziar completamente as variáveis armazenadas na sessão (`$_SESSION = []`) e destruir os dados de sessão com `session_destroy()` |
+| TA09.03 | O sistema deve expirar os cookies de sessão e de identificação gravados no navegador com timestamp retroativo |
+| TA09.04 | Após a invalidação da sessão, o sistema deve redirecionar imediatamente o usuário para a página de Autenticação (`login.php`) |
+| TA09.05 | Tentar acessar diretamente qualquer página ou funcionalidade administrativa após o encerramento da sessão. O sistema deve bloquear o acesso e redirecionar para o login |
+
 ### Responsabilidades dos papéis
 
 - **Analista:** especificar e detalhar a User Story.
@@ -338,11 +375,21 @@ Os testes de aceitação originais foram mantidos como critérios de validação
 - **Revisor:** avaliar a implementação e executar os testes de unidade e integração.
 - **Testador:** executar os testes de aceitação e elaborar o relatório de testes.
 
-## 4. Resumo das Prioridades
+## 4. Resumo das Prioridades e Distribuição por Integrante
+
+Com a adição da **US09**, o projeto atinge **9 User Stories completas**, permitindo uma distribuição perfeitamente equilibrada de **3 histórias por integrante** em cada um dos quatro papéis do processo de desenvolvimento:
+
+| Integrante | Analista (3) | Desenvolvedor (3) | Revisor (3) | Testador / QA (3) |
+| --- | --- | --- | --- | --- |
+| **Helena Dantas Mariano** | US02, US05, US08 | US01, US06, US09 | US03, US04, US07 | US02, US05, US08 |
+| **Isabelle Cavalcanti da Silva** | US01, US04, US07 | US03, US05, US08 | US02, US06, US09 | US01, US04, US07 |
+| **Jaine Souza da Luz** | US03, US06, US09 | US02, US04, US07 | US01, US05, US08 | US03, US06, US09 |
+
+### Resumo por prioridade
 
 | Prioridade original | Quantidade de US | Histórias |
 | --- | --- | --- |
-| Essencial | 7 | US01, US02, US03, US04, US05, US06 e US07 |
+| Essencial | 8 | US01, US02, US03, US04, US05, US06, US07 e US09 |
 | Importante | 1 | US08 |
 
 A classificação P0/P1/P2 e as prioridades individuais dos requisitos internos deverão ser definidas pela equipe. Nenhuma correspondência foi atribuída nesta reorganização.

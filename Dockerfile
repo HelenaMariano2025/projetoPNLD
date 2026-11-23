@@ -26,6 +26,12 @@ COPY --from=vendor /app/vendor /app/vendor
 # Copia o código-fonte da aplicação
 COPY . /app
 
+# Ajusta permissões para usuário sem privilégios de root (boas práticas de segurança)
+RUN chown -R www-data:www-data /app
+
+# Usuário sem privilégios de root (non-root)
+USER www-data
+
 # Porta configurável para provedores em nuvem (Render, Railway, Fly.io)
 EXPOSE 8000
 ENV PORT=8000

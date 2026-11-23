@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
 
 $_SESSION = [];
 
@@ -13,7 +14,8 @@ if (ini_get('session.use_cookies')) {
 setcookie('matricula', '', time() - 3600, '/');
 setcookie('nome', '', time() - 3600, '/');
 
-session_destroy();
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_destroy();
+}
 
-header('Location: login.php');
-exit;
+redirecionar('login.php');
