@@ -26,7 +26,7 @@ A automação foi configurada utilizando o **GitHub Actions** através do arquiv
 
 A esteira é dividida em três fases:
 
-1. **CI (Integração Contínua):** Roda a cada push ou abertura de Pull Request. Confere a sintaxe dos arquivos PHP, prepara o banco de dados MySQL de testes, roda todos os testes unitários e de integração no PHPUnit, calcula a cobertura de código e envia as métricas para o SonarQube do LABENS.
+1. **CI (Integração Contínua):** Roda a cada push ou abertura de Pull Request. Confere a sintaxe dos arquivos PHP (`php -l`), executa a análise estática (`PHPStan`), prepara o banco de dados MySQL de testes, roda os testes unitários e de integração no PHPUnit, calcula a cobertura de código e envia as métricas para o SonarQube do LABENS. *(Os testes E2E com Selenium ficam isolados na suíte `e2e` via `docker-compose.yml` para manter a esteira de PR rápida e determinística, sem dependência de navegador no runner).*
 2. **CD (Implantação Contínua):** Só roda quando as alterações são enviadas para a branch principal (`main`) e todos os testes da CI passaram. Ela aciona o serviço na nuvem para atualizar a versão no ar.
 3. **Smoke Tests (Testes de Fumaça pós-deploy):** A esteira faz chamadas na URL pública da aplicação (`/health`) para verificar se ela está no ar e respondendo corretamente (código HTTP 200).
 
@@ -118,7 +118,7 @@ O sistema utiliza as seguintes variáveis para se comunicar com o banco de dados
 | `DB_USER` | Usuário do banco | `pnld` |
 | `DB_PASSWORD` | Senha do banco | `pnld_local` (ou `pnldpassword`) |
 | `DB_NAME` | Nome do banco de dados | `SistemaHBL` |
-| `PORT` | Porta em que o PHP escuta | `8000` |
+| `PORT` | Porta em que o PHP escuta | `8080` |
 | `RENDER_DEPLOY_HOOK` | Link secreto para acionar o deploy na nuvem | Configurado no GitHub Secrets |
 | `APP_BASE_URL` | Endereço público do sistema na internet | Configurado no GitHub Secrets |
 | `SONAR_TOKEN` | Chave de acesso do SonarQube do LABENS | Configurado no GitHub Secrets |
@@ -151,11 +151,10 @@ Ao acessar o endereço `/health`, a aplicação retorna um texto em formato JSON
 
 ```json
 {
-    "status": "UP",
-    "timestamp": "2026-11-22T14:30:00-03:00",
+    "status": "healthy",
+    "database": "connected",
     "service": "Sistema HBL - PNLD",
-    "environment": "production",
-    "php_version": "8.4.1"
+    "timestamp": "2026-11-25T00:30:00-03:00"
 }
 ```
 
@@ -171,5 +170,5 @@ Smoke test aprovado: Aplicação operacional e respondendo status 200 OK!
 
 ### 8.3 Situação dos testes e Quality Gate
 - Mais de **190 testes automatizados** cadastrados e aprovados, cobrindo regras de negócio, páginas e banco de dados.
-- Cobertura de código superior a 95% nas classes principais de regras e repositórios.
-- **Quality Gate no SonarQube do LABENS:** Aprovado (*Passed*), sem vulnerabilidades graves e atendendo aos critérios de qualidade exigidos pela disciplina.
+- **Cobertura em Código Novo no SonarQube:** **96,9%** (exigido `>= 80,0%`), com **0% de duplicação**.
+- **Quality Gate no SonarQube do LABENS:** Aprovado (*Passed*), com **0 issues abertas** e **0 security hotspots** (nota **A**), atendendo integralmente aos critérios de qualidade exigidos pela disciplina.
