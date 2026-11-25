@@ -5,9 +5,17 @@
     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd"
 >
     <testsuites>
-        <testsuite name="Projeto PNLD">
-            <directory>tests</directory>
+        <testsuite name="Testes unitarios">
+            <file>tests/RegrasTest.php</file>
+            <file>tests/AlunoRepositoryTest.php</file>
+            <file>tests/LivroRepositoryTest.php</file>
         </testsuite>
+
+        <testsuite name="Testes de integracao">
+            <file>tests/AlunoRepositoryIntegrationTest.php</file>
+            <file>tests/LivroRepositoryIntegrationTest.php</file>
+        </testsuite>
+
     </testsuites>
 
     <source>

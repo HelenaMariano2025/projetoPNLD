@@ -42,7 +42,7 @@ class AlunoRepositoryTest extends TestCase
 
     public function testConsultarAlunosAtivos()
     {
-        $resultadoMock = $this->createMock(mysqli_result::class);
+        $resultadoMock = $this->createStub(mysqli_result::class);
 
         $conn = $this->createMock(mysqli::class);
 

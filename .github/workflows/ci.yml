@@ -1,4 +1,4 @@
-name: Testes
+name: CI - Testes e Qualidade
 
 on:
   push:
@@ -9,8 +9,12 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   tests:
+    name: Testes e análise de qualidade
     runs-on: ubuntu-latest
 
     services:
@@ -40,8 +44,24 @@ jobs:
           extensions: mysqli, xdebug
           coverage: xdebug
 
+      - name: Cache das dependências do Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist
+
+      - name: Verificar sintaxe PHP
+        run: |
+          find php tests -type f -name "*.php" -print0 |
+            xargs -0 -n1 php -l
+
+      - name: Executar análise estática
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress
 
       - name: Preparar banco de testes
         run: |
@@ -49,7 +69,7 @@ jobs:
           sudo apt-get install -y mysql-client
           mysql -h 127.0.0.1 -u pnld -ppnld_local SistemaHBL < sql/bancoPNLD.sql
 
-      - name: Executar testes e cobertura
+      - name: Executar testes e gerar cobertura
         env:
           XDEBUG_MODE: coverage
           DB_HOST: 127.0.0.1
@@ -57,12 +77,14 @@ jobs:
           DB_PASSWORD: pnld_local
           DB_NAME: SistemaHBL
         run: |
-          php vendor/phpunit/phpunit/phpunit tests \
+          vendor/bin/phpunit \
             --coverage-text \
             --coverage-clover coverage.xml
 
       - name: Publicar relatório de cobertura
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage.xml
+          if-no-files-found: ignore
