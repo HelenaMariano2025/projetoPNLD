@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
 
 $_SESSION = [];
 
@@ -29,7 +30,8 @@ $opcoesCookie = [
 setcookie('matricula', '', $opcoesCookie);
 setcookie('nome', '', $opcoesCookie);
 
-session_destroy();
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_destroy();
+}
 
-header('Location: login.php');
-exit;
+redirecionar('login.php');

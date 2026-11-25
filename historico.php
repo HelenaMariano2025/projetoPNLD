@@ -43,9 +43,12 @@ try {
     $erroConsulta = true;
 }
 
-$conn->close();
+if (!defined('TESTE_PAGINA_HISTORICO')) {
+    $conn->close();
+}
 
 $paginaAtiva = 'historico';
+
 $tituloPagina = 'Histórico de Empréstimos — Sistema HBL Control';
 
 require_once __DIR__ . '/includes/cabecalho.php';
@@ -189,3 +192,4 @@ require_once __DIR__ . '/includes/cabecalho.php';
 </main>
 
 <?php require_once __DIR__ . '/includes/rodape.php'; ?>
+

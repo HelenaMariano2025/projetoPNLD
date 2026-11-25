@@ -1,4 +1,4 @@
-name: CI - Testes, Qualidade e SonarQube
+name: CI/CD - Testes, Qualidade, SonarQube e Deploy
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - main
       - "task/**"
       - "feat/**"
+      - "infra/**"
   pull_request:
     branches:
       - main
@@ -15,7 +16,7 @@ permissions:
 
 jobs:
   tests:
-    name: Testes e análise de qualidade
+    name: 1. CI - Testes e análise de qualidade
     runs-on: ubuntu-latest
 
     services:
@@ -61,6 +62,8 @@ jobs:
 
       - name: Verificar sintaxe PHP
         run: |
+          find . -maxdepth 2 -name "*.php" -not -path "./vendor/*" -print0 |
+            xargs -0 -n1 php -l
           find php tests tests-e2e -type f -name "*.php" -print0 |
             xargs -0 -n1 php -l
 
@@ -97,4 +100,57 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v8.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'http://labens.dct.ufrn.br/sonarqube' }}
+
+  cd:
+    name: 2. CD - Deploy Contínuo em Nuvem
+    needs: tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Disparar Deploy Automatizado (Render Deploy Hook)
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            echo "Disparando deploy na nuvem via Webhook seguro..."
+            curl -f -X POST "$RENDER_DEPLOY_HOOK"
+          else
+            echo "Aviso: RENDER_DEPLOY_HOOK não configurado em GitHub Secrets."
+          fi
+
+  smoke-tests:
+    name: 3. Smoke Testing Pós-Deploy (/health)
+    needs: cd
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validar Endpoint de Integridade (/health)
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          if [ -z "$APP_BASE_URL" ]; then
+            echo "Aviso: APP_BASE_URL não configurado em GitHub Secrets. Pulando teste de fumaça."
+            exit 0
+          fi
+          URL="${APP_BASE_URL}/health"
+          echo "Aguardando estabilização da aplicação em: $URL"
+          sleep 25
+          SUCCESS=false
+          for i in {1..10}; do
+            echo "Tentativa $i: requisitando $URL..."
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+            echo "Código HTTP retornado: $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "Smoke test aprovado: Aplicação operacional e respondendo status 200 OK!"
+              SUCCESS=true
+              break
+            fi
+            sleep 10
+          done
+          if [ "$SUCCESS" = false ]; then
+            echo "Falha no Smoke Test: Endpoint de integridade não respondeu HTTP 200."
+            exit 1
+          fi

@@ -21,6 +21,7 @@
             <exclude>tests/EmprestimoRepositoryTest.php</exclude>
             <exclude>tests/LoginPaginaTest.php</exclude>
             <exclude>tests/TurmasPaginaTest.php</exclude>
+            <exclude>tests/HistoricoPaginaTest.php</exclude>
             <exclude>tests/EmprestimoTransacaoEspiaoTest.php</exclude>
         </testsuite>
         <testsuite name="integration">
@@ -37,6 +38,7 @@
             <file>tests/EmprestimoRepositoryTest.php</file>
             <file>tests/LoginPaginaTest.php</file>
             <file>tests/TurmasPaginaTest.php</file>
+            <file>tests/HistoricoPaginaTest.php</file>
             <file>tests/EmprestimoTransacaoEspiaoTest.php</file>
         </testsuite>
         <testsuite name="e2e">
@@ -48,9 +50,12 @@
         <include>
             <directory>php</directory>
             <file>login.php</file>
+            <file>logout.php</file>
             <file>turmas.php</file>
             <file>editar_turma.php</file>
             <file>editar_livro.php</file>
+            <file>historico.php</file>
+            <file>health.php</file>
         </include>
     </source>
     <php>

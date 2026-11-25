@@ -50,9 +50,9 @@ $nomeUsuario = $_SESSION['nome'] ?? 'Administrador';
         </div>
     </div>
     <?php if ($usuarioAutenticado): ?>
-        <nav class="hbl-navbar-bar">
+        <nav class="hbl-navbar-bar" aria-label="Barra de navegação">
             <div class="container-fluid">
-                <nav class="navbar navbar-expand-lg hbl-navbar">
+                <nav class="navbar navbar-expand-lg hbl-navbar" aria-label="Menu principal">
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#hblNavbarContent" aria-controls="hblNavbarContent" aria-expanded="false" aria-label="Alternar navegação">
                         <i class="fa fa-bars" aria-hidden="true"></i>
                         <span class="ml-1" style="font-size: 0.85rem; font-weight: 500;">Menu</span>
