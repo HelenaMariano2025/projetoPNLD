@@ -151,4 +151,3 @@ A documentação do projeto reúne informações sobre o planejamento, a execuç
 - [Testes de Mutação](docs/testes-de-mutacao.md)
 - [Relatórios do Infection](docs/mutation/)
 - [Manual de Execução](docs/manual-de-execucao.md)
-

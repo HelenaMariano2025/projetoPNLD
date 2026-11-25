@@ -7,34 +7,37 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
 # ==============================================================================
-# Estágio 2: Imagem Final de Execução em Produção (Runtime Stage)
+# Estágio 2: Compilação de Extensões PHP (Extensions Stage)
+# ==============================================================================
+FROM php:8.4-cli AS extensions
+
+RUN apt-get update \
+    && apt-get install -y libzip-dev libcurl4-openssl-dev libonig-dev \
+    && docker-php-ext-install mysqli pdo_mysql mbstring zip curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# ==============================================================================
+# Estágio 3: Imagem Final de Execução em Produção (Runtime Stage)
 # ==============================================================================
 FROM php:8.4-cli
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    unzip \
-    libzip-dev \
-    libcurl4-openssl-dev \
-    && docker-php-ext-install mysqli zip curl \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libzip5 \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 
 WORKDIR /app
 
-# Copia dependências geradas no estágio de build
 COPY --from=vendor /app/vendor /app/vendor
-
-# Copia o código-fonte da aplicação
 COPY . /app
 
-# Ajusta permissões para usuário sem privilégios de root (boas práticas de segurança)
 RUN chown -R www-data:www-data /app
 
-# Usuário sem privilégios de root (non-root)
 USER www-data
 
-# Porta configurável para provedores em nuvem (Render, Railway, Fly.io)
-EXPOSE 8000
-ENV PORT=8000
+ENV PORT=8080
+EXPOSE 8080
 
-# Inicializa o servidor web embutido utilizando o roteador com suporte a /health
-CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8000} -t /app /app/router.php"]
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080} -t /app /app/router.php"]
