@@ -31,7 +31,14 @@ COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 WORKDIR /app
 
 COPY --from=vendor /app/vendor /app/vendor
-COPY . /app
+COPY *.php /app/
+COPY css/ /app/css/
+COPY fonts/ /app/fonts/
+COPY images/ /app/images/
+COPY includes/ /app/includes/
+COPY js/ /app/js/
+COPY php/ /app/php/
+COPY sql/ /app/sql/
 
 RUN chown -R www-data:www-data /app
 
