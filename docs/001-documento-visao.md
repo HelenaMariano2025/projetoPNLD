@@ -1,189 +1,178 @@
-# Processo BSI \- Documento de Visão
+# Documento de Visão — Sistema HBL
 
-	Modelo para o Doc 001 \- Documento de Visão. O documento de visão do projeto apresenta informações sobre a equipe, o projeto, lista de requisitos e riscos iniciais do projeto escrito após a Conversa com o Cliente. Modelo baseado nas características do processo easYProcess (YP).
+**Data:** A definir pela equipe  
+**Versão:** A definir pela equipe
 
-1. **Introdução** 
+## 1. Introdução
 
-Este documento tem como propósito apresentar e documentar os requisitos do Sistema HBL, estabelecendo as principais funcionalidades e características que o sistema deverá oferecer. O documento busca servir como referência para o desenvolvimento, organização e validação do sistema, permitindo que a equipe tenha uma visão clara das necessidades do produto e dos requisitos que deverão ser atendidos.  
-O Sistema HBL é uma solução web desenvolvida para auxiliar no gerenciamento de livros didáticos fornecidos pelo Programa Nacional do Livro e do Material Didático (PNLD). O sistema automatiza o controle de empréstimos, devoluções e a gestão de alunos, turmas e livros, substituindo o processo manual baseado em registros de papel e trazendo maior agilidade, eficácia, segurança e organização para o setor acadêmico.
+### 1.1 Propósito
 
-2. **Descrição geral**   
-     
-   **2.1 Requisitos funcionais**  
-* *RF1* – O sistema deverá disponibilizar telas específicas para os processos de autenticação, cadastro, gestão de alunos, gestão de turmas, gestão de livros, registro de empréstimos, registro de devoluções e geração de relatórios. As telas serão: Página Inicial, Cadastro, Autenticação, Página do Administrador, Alunos, Turmas, Livros, Empréstimos e Devoluções, e Histórico de Empréstimos.  
-* *RF2* \- O administrador terá acesso a todas as telas e funcionalidades do sistema, mediante autenticação prévia.  
-* *RF3* \- O sistema deve ser capaz de gerar relatórios: Histórico de Empréstimos.  
-* *RF4* \- O sistema deverá permitir o cadastro de novos administradores, com campos obrigatórios para matrícula, nome e senha.  
-* *RF5* \- O sistema deverá permitir a autenticação de usuários previamente cadastrados, por meio de matrícula e senha.  
-* *RF6* \- O sistema deverá permitir o cadastro, consulta, alteração e exclusão de alunos, com informações como matrícula, nome, data de nascimento, endereço, sexo, e-mail e código da turma.  
-* *RF7* \- O sistema deverá permitir o cadastro, consulta, alteração e exclusão de turmas, com informações como código, curso, período, série e matriz curricular  
-* *RF8* \- O sistema deverá permitir o cadastro, consulta, alteração e exclusão de livros, com informações como ISBN, título, autor, editora, ano, edição, situação e quantidade disponível.  
-* *RF9* \- O sistema deverá permitir o registro de empréstimos de livros, associando o exemplar ao aluno e ao administrador responsável.  
-* *RF10* \- O sistema deverá permitir o registro de devoluções de livros, com data de devolução.  
-* *RF11 –* O sistema deverá exibir uma mensagem de “Nenhum livro emprestado no momento” quando não houver empréstimos ativos.  
-* *RF12 –* O sistema deverá permitir a busca de alunos pelo nome, turmas pelo curso e livros pelo título*.*  
-* *RF13 –* O sistema deverá gerar um PDF do Histórico de Empréstimos.
+Este documento tem como propósito apresentar e documentar os requisitos do Sistema HBL, estabelecendo as principais funcionalidades e características que o sistema deverá oferecer.
 
+O documento busca servir como referência para o desenvolvimento, organização e validação do sistema, permitindo que a equipe tenha uma visão clara das necessidades do produto e dos requisitos que deverão ser atendidos.
 
-**2.2 Requisitos não-funcionais**
+### 1.2 Escopo do Projeto
 
-* *RNF1* – O sistema deverá possuir uma interface simples, intuitiva e de fácil compreensão, permitindo que os usuários realizem as operações sem necessidade de treinamento prévio.  
-* *RNF2* – O sistema deverá ser acessível via navegador web.  
-* *RNF3* – O sistema deverá rodar em ambientes Windows e Linux.  
-* *RNF4* – O sistema deverá garantir a segurança das informações, restringindo o acesso às funcionalidades administrativas a usuários devidamente autenticados e autorizados.  
-* *RNF5* – O sistema deverá ser feito o log de ações dos usuários.
+O Sistema HBL é uma solução web desenvolvida para auxiliar no gerenciamento de livros didáticos fornecidos pelo Programa Nacional do Livro e do Material Didático (PNLD).
 
-2.3 **Perfis dos usuários**   
-As pessoas que irão interagir com o sistema. Essa definição é fundamental para entender quem são os usuários, o que eles precisam fazer e como o sistema deve se comportar para atender às suas necessidades.
+O sistema será destinado ao IFPB — Campus Patos e permitirá que o administrador cadastre alunos, turmas e livros, registre empréstimos e devoluções e gere relatórios de histórico de empréstimos.
 
-2.5 **Riscos**   
-São eventos ou condições incertas que, se ocorrerem, podem impactar negativamente o projeto, afetando o cumprimento dos prazos, a qualidade do software, os custos ou o alcance dos objetivos definidos. No contexto de desenvolvimento de software, a identificação e o gerenciamento de riscos são essenciais para prevenir problemas e planejar ações mitigadoras.
+A interação do administrador com o sistema será realizada por meio de uma sequência de telas que conduzirá o processo desde a autenticação até a geração de relatórios.
 
-2.6 **Perspectiva do produto**  
-O Sistema HBL será um sistema web destinado ao gerenciamento de livros didáticos fornecidos pelo PNLD no IFPB – Campus Patos. O sistema permitirá que o administrador cadastre alunos, turmas e livros, registre empréstimos e devoluções, e gere relatórios de histórico de empréstimos. A interação do administrador com o sistema será realizada por meio de uma sequência de telas que conduzirá o processo desde a autenticação até a geração de relatórios. 
+## 2. Problema e Oportunidade
 
-**Histórico de revisões**
+### 2.1 Problema
 
-| Data | Versão | Descrição | Autor |
-| :---: | :---: | ----- | ----- |
-| 01/03/2018 | 1.0 | Documento inicial | Taciano Morais Silva |
-| 02/09/2026 | 1.1 | Adição da seção Histórico de Revisões neste documento e no modelo | Taciano Morais Silva |
-| 16/11/2018 | 1.2 | Pequenos ajustes no texto | Taciano Morais Silva |
-| 27/12/2018 | 1.3 | Melhorias no texto de descrição do documento. | Taciano Morais Silva |
-| 22/02/2020 | 1.4 | Ajustes de formatação do documento. | Taciano Morais Silva |
-| 22/02/2020 | 1.5 | Renomeando de Doc 003 para Doc 001\. | Taciano Morais Silva |
+O gerenciamento dos livros didáticos utiliza um processo manual baseado em registros de papel.
 
-UNIVERSIDADE FEDERAL DO RIO GRANDE DO NORTE  
-CENTRO DE ENSINO SUPERIOR DO SERIDÓ  
-DEPARTAMENTO DE COMPUTAÇÃO E TECNOLOGIA  
-CURSO DE BACHARELADO EM SISTEMAS DE INFORMAÇÃO
+O projeto busca substituir esse processo no controle de empréstimos, devoluções e na gestão de alunos, turmas e livros.
 
-# Modelos BSI \- Doc 001 \- Documento de Visão
+### 2.2 Oportunidade
 
-HELENA DANTAS MARIANO  
-ISABELLE CAVALCANTI DA SILVA  
-JAINE SOUZA DA LUZ
+A automatização desse processo busca proporcionar maior agilidade, eficácia, segurança e organização para o setor acadêmico.
 
-**SISTEMA HBL: Documento de Visão**
+### 2.3 Solução Proposta
 
-Caicó – RN  
-2026
+O Sistema HBL é um sistema web de gerenciamento desenvolvido para auxiliar no controle de livros didáticos fornecidos pelo PNLD no IFPB — Campus Patos.
 
-# Sumário {#sumário}
+Seu objetivo principal é automatizar e otimizar o fluxo de empréstimos, devoluções e a gestão de alunos, turmas, livros e exemplares.
 
-[**Sumário**](#sumário)	**[3](#sumário)**
+## 3. Stakeholders e Usuários
 
-[**Equipe e Definição de Papéis**](#equipe-e-definição-de-papéis)	**[4](#equipe-e-definição-de-papéis)**
+### 3.1 Stakeholders
 
-[Matriz de Competências](#matriz-de-competências)	[4](#matriz-de-competências)
+| Nome | Responsabilidade |
+| --- | --- |
+| Taciano Morais Silva | Cliente Professor |
+| Helena Dantas Mariano | Analista e Desenvolvedora |
+| Isabelle Cavalcanti da Silva | Analista e Desenvolvedora |
+| Jaine Souza da Luz | Analista e Desenvolvedora |
 
-[**Descrição do Projeto**](#descrição-do-projeto)	**[4](#descrição-do-projeto)**
+**Contatos da equipe:**
 
-[Requisitos Funcionais](#requisitos-funcionais)	[4](#requisitos-funcionais)
+| Nome | E-mail |
+| --- | --- |
+| Taciano Morais Silva | tacianosilva@gmail.com |
+| Helena Dantas Mariano | helena.mariano.123@ufrn.edu.br |
+| Isabelle Cavalcanti da Silva | isabelle.silva.712@ufrn.edu.br |
+| Jaine Souza da Luz | jaine.luz.138@ufrn.edu.br |
 
-[Requisitos não-Funcionais](#requisitos-não-funcionais)	[5](#requisitos-não-funcionais)
+**Matriz de competências:**
 
-[Perfis dos Usuários](#perfis-dos-usuários)	[5](#perfis-dos-usuários)
+| Nome | Competências |
+| --- | --- |
+| Taciano Morais Silva | Java, JUnit, Eclipse, JSP, JSF, Hibernate, Matemática, LaTeX, entre outras |
+| Helena Dantas Mariano | Python e C |
+| Isabelle Cavalcanti da Silva | Python e C |
+| Jaine Souza da Luz | Python e C |
 
-[Riscos](#riscos)	[5](#riscos)
+### 3.2 Perfis de Usuário
 
-[**Referências**](#referências)	**[6](#referências)**
+| Perfil | Descrição | Papéis no processo YP-Agentic |
+| --- | --- | --- |
+| Funcionário do Setor Acadêmico — Administrador | Deverá realizar autenticação para acessar as funcionalidades administrativas. Será responsável pelo gerenciamento de alunos, turmas, livros, empréstimos, devoluções e geração de relatórios | Não especificados no documento original |
 
-# 
+O sistema possui um perfil de usuário descrito: o funcionário do setor acadêmico, que atua como administrador.
 
-# 
+O administrador deverá possuir capacitação para utilizar o sistema, mas não será necessário que possua conhecimentos técnicos ou especializados em informática.
 
-# 
+## 4. Requisitos
 
-# Histórico de revisões
+### 4.1 Requisitos Funcionais (alto nível)
 
-| Data | Versão | Descrição | Autor |
-| ----- | ----- | ----- | ----- |
-| 19/03/2018 | 1.0 | Documento inicial | Taciano Morais Silva |
-|  |  |  |  |
+As prioridades individuais dos requisitos não foram preenchidas no documento original.
 
-# Equipe e Definição de Papéis {#equipe-e-definição-de-papéis}
+| ID | Descrição | Prioridade |
+| --- | --- | --- |
+| RF1 | O sistema deverá disponibilizar telas específicas para autenticação, cadastro, gestão de alunos, gestão de turmas, gestão de livros, registro de empréstimos, registro de devoluções e geração de relatórios. As telas serão: Página Inicial, Cadastro, Autenticação, Página do Administrador, Alunos, Turmas, Livros, Empréstimos e Devoluções e Histórico de Empréstimos | A definir |
+| RF2 | O administrador terá acesso a todas as telas e funcionalidades do sistema, mediante autenticação prévia | A definir |
+| RF3 | O sistema deverá ser capaz de gerar o relatório Histórico de Empréstimos | A definir |
+| RF4 | O sistema deverá permitir o cadastro de novos administradores, com campos obrigatórios para matrícula, nome e senha | A definir |
+| RF5 | O sistema deverá permitir a autenticação de usuários previamente cadastrados por meio de matrícula e senha | A definir |
+| RF6 | O sistema deverá permitir o cadastro, consulta, alteração e exclusão de alunos, com matrícula, nome, data de nascimento, endereço, sexo, e-mail e código da turma | A definir |
+| RF7 | O sistema deverá permitir o cadastro, consulta, alteração e exclusão de turmas, com código, curso, período, série e matriz curricular | A definir |
+| RF8 | O sistema deverá permitir o cadastro, consulta, alteração e exclusão de livros, com ISBN, título, autor, editora, ano, edição, situação e quantidade disponível | A definir |
+| RF9 | O sistema deverá permitir o registro de empréstimos de livros, associando o exemplar ao aluno e ao administrador responsável | A definir |
+| RF10 | O sistema deverá permitir o registro de devoluções de livros, com data de devolução | A definir |
+| RF11 | O sistema deverá exibir a mensagem “Nenhum livro emprestado no momento” quando não houver empréstimos ativos | A definir |
+| RF12 | O sistema deverá permitir a busca de alunos pelo nome, turmas pelo curso e livros pelo título | A definir |
+| RF13 | O sistema deverá gerar um PDF do Histórico de Empréstimos | A definir |
 
-	
+#### Detalhamento dos requisitos presente no documento original
 
-| Equipe | Papel | E-mail |
-| :---- | :---- | :---- |
-| Taciano | Cliente Professor | tacianosilva@gmail.com |
-| Helena | Analista, Desenvolvedor | helena.mariano.123@ufrn.edu.br |
-| Isabelle | Analista, Desenvolvedor | isabelle.silva.712@ufrn.edu.br |
-| Jaine | Analista, Desenvolvedor | jaine.luz.138@ufrn.edu.br |
+O documento original também apresenta a lista abaixo, com outra numeração. Ela foi preservada sem unificação dos identificadores.
 
-## 	Matriz de Competências {#matriz-de-competências}
+O ator indicado para todos os requisitos desta lista é o Administrador.
 
-| Equipe | Competências |
-| :---- | :---- |
-| Taciano | Desenvolvedor Java, Junit, Eclipse, JSP, JSF, Hibernate, Matemática, Latex, etc |
-| Helena Dantas Mariano | Desenvolvedor python, C |
-| Isabelle Cavalcanti da Silva | Desenvolvedor python, C |
-| Jaine Souza da Luz | Desenvolvedor python, C |
+| ID original | Descrição | Prioridade |
+| --- | --- | --- |
+| RF01 — Incluir Aluno | Um aluno tem os atributos matrícula, nome, data de nascimento, endereço, sexo, e-mail, situação e código da turma | A definir |
+| RF02 — Alterar Aluno | Permitir a mudança de dados cadastrais, como endereço, e-mail e demais informações do discente | A definir |
+| RF03 — Listar/Consultar Alunos | Permitir a busca e listagem de alunos cadastrados por meio de filtros como nome | A definir |
+| RF04 — Visualizar Aluno | Exibir detalhadamente as informações de um aluno específico | A definir |
+| RF05 — Excluir Aluno | Permitir a remoção de registros de alunos | A definir |
+| RF07 — Incluir Turma | Permitir cadastrar turmas com código, curso, sigla do curso, período, série, matriz curricular e situação | A definir |
+| RF08 — Alterar Turma | Permitir a modificação dos dados das turmas cadastradas | A definir |
+| RF09 — Listar Turmas | Permitir buscar e listar turmas com base em critérios como curso | A definir |
+| RF10 — Visualizar Turma | Exibir detalhadamente as informações de uma turma | A definir |
+| RF11 — Excluir Turma | Permitir a exclusão de turmas do sistema | A definir |
+| RF12 — Gestão de Livros e Exemplares | Permitir cadastrar, visualizar, alterar e excluir livros, com título, autor, editora, ano, ISBN, edição e quantidade disponível, e gerenciar exemplares individuais por meio de tombos | A definir |
+| RF13 — Registro de Empréstimos | Permitir registrar empréstimos de livros didáticos aos alunos, vinculando exemplar, data de empréstimo, data prevista de devolução e administrador responsável | A definir |
+| RF14 — Registro de Devoluções | Permitir registrar a devolução dos livros emprestados, atualizando o histórico e a disponibilidade dos materiais | A definir |
+| RF15 — Geração de Relatórios | Permitir gerar relatórios e histórico de empréstimos | A definir |
+| RF16 — Autenticação e Cadastro de Administradores | Disponibilizar cadastro de novos administradores e autenticação por matrícula e senha para acesso restrito às funcionalidades de gestão | A definir |
 
-# Descrição do Projeto {#descrição-do-projeto}
+### 4.2 Requisitos Não Funcionais
 
-	O projeto Sistema HBL é um sistema web de gerenciamento desenvolvido para auxiliar no controle de livros didáticos fornecidos pelo Programa Nacional do Livro e do Material Didático (PNLD) no IFPB Campus Patos. O sistema tem como objetivo principal automatizar e otimizar o fluxo de empréstimos, devoluções e a gestão de alunos, turmas, livros e exemplares.
+| ID | Descrição |
+| --- | --- |
+| RNF1 | O sistema deverá possuir uma interface simples, intuitiva e de fácil compreensão, permitindo que os usuários realizem as operações sem necessidade de treinamento prévio |
+| RNF2 | O sistema deverá ser acessível via navegador web |
+| RNF3 | O sistema deverá rodar em ambientes Windows e Linux |
+| RNF4 | O sistema deverá garantir a segurança das informações, restringindo o acesso às funcionalidades administrativas a usuários devidamente autenticados e autorizados |
+| RNF5 | O sistema deverá registrar as ações dos usuários em log |
 
-## 	Perfis dos Usuários  {#perfis-dos-usuários}
+#### Detalhamento dos requisitos não funcionais presente no documento original
 
-	O sistema poderá ser utilizado por apenas um usuário:
+A segunda lista do documento original foi preservada abaixo, sem unificação dos identificadores.
 
-	**Funcionário do Setor Acadêmico**  
-	Esse usuário deverá realizar autenticação para acessar as funcionalidades administrativas. Será responsável pelo gerenciamento de alunos, turmas, livros, empréstimos, devoluções e geração de relatórios. O administrador deverá possuir capacitação para utilizar o sistema, mas não será necessário que possua conhecimentos técnicos ou especializados em informática.
+| ID original | Descrição |
+| --- | --- |
+| RNF01 — Interface Web e Acessibilidade | O sistema deverá possuir uma interface web simples, intuitiva e de fácil compreensão, permitindo a navegação e o gerenciamento sem necessidade de treinamentos complexos |
+| RNF02 — Compatibilidade de Ambiente | O sistema deverá ser compatível com servidores web que suportem PHP e MySQL, rodando adequadamente em ambientes Windows e Linux |
+| RNF03 — Segurança e Controle de Acesso | O sistema deverá garantir a segurança das informações acadêmicas, restringindo as funcionalidades administrativas e operacionais a usuários autenticados |
+| RNF04 — Tecnologias de Desenvolvimento | O sistema deverá utilizar HTML, CSS, JavaScript, PHP e MySQL, conforme a arquitetura proposta para a solução web |
 
-## 	Requisitos Funcionais {#requisitos-funcionais}
+> **Nota:** dependendo do porte do projeto, este documento pode absorver o modelo conceitual e o detalhamento dos requisitos. Para projetos maiores, o detalhamento técnico migra para o Documento de Modelos e para a Especificação de User Stories.
 
-**RF01 \- Incluir Aluno:** Um aluno tem os atributos matrícula, nome, data de nascimento, endereço, sexo, e-mail, situação e código da turma. (Ator: Administrador) 
+## 5. Restrições do Projeto
 
-**RF02 \- Alterar Aluno:** A alteração permite a mudança de dados cadastrais como endereço, e-mail e demais informações do discente. (Ator: Administrador) 
+- Utilização das tecnologias HTML, CSS, JavaScript, PHP e MySQL, conforme descrito no documento original.
+- Execução em ambiente com suporte a PHP e banco de dados MySQL.
+- Outras restrições técnicas, de prazo ou de recursos: a definir pela equipe.
 
-**RF03 \- Listar/Consultar Alunos:** O sistema permite a busca e listagem de alunos cadastrados por meio de filtros como nome. (Ator: Administrador)
+## 6. Riscos
 
-**RF04 \- Visualizar Aluno:** Exibição detalhada das informações de um aluno específico. (Ator: Administrador) 
+A tabela deverá ser atualizada ao final de cada iteração, na reunião de acompanhamento.
 
-**RF05 \- Excluir Aluno:** O sistema permite a remoção de registros de alunos. (Ator: Administrador) 
+| Data | Risco | Prioridade | Responsável | Providência/Solução |
+| --- | --- | --- | --- | --- |
+| 10/09/2026 | Não aprendizado das ferramentas utilizadas pelos componentes do grupo | Alta | Todas | Reforçar os estudos sobre as ferramentas e realizar atividades de aprendizagem com a integrante que conhece a ferramenta |
+| 10/09/2026 | Ausência, por qualquer motivo, do cliente | Média | Gerente | Planejar o cronograma considerando a agenda do cliente |
+| 10/09/2026 | Não conclusão das funcionalidades do software no tempo estimado | Baixa | Todas | Acompanhar de perto o desenvolvimento de cada membro da equipe |
 
-**RF07 \- Incluir Turma:** Permite cadastrar turmas informando dados como código, curso, sigla do curso, período, série, matriz curricular e situação. (Ator: Administrador) 
+Os três riscos estavam registrados com status “Vigente” no documento original.
 
-**RF08 \- Alterar Turma:** Permite a modificação de dados das turmas cadastradas. (Ator: Administrador) 
+## 7. Critérios de Sucesso
 
-**RF09 \- Listar Turmas:** Permite buscar e listar turmas com base em critérios como o curso. (Ator: Administrador) 
+Os critérios de sucesso não estavam preenchidos no documento original.
 
-**RF10 \- Visualizar Turma:** Exibição detalhada das informações de uma turma. (Ator: Administrador)   
-**RF11 \- Excluir Turma:** Permite a exclusão de turmas do sistema. (Ator: Administrador) 
+| Métrica | Valor Atual | Meta | Prazo |
+| --- | --- | --- | --- |
+| A definir pela equipe | A definir pela equipe | A definir pela equipe | A definir pela equipe |
 
-**RF12 \- Gestão de Livros e Exemplares:** O sistema permite cadastrar, visualizar, alterar, excluir livros (título, autor, editora, ano, ISBN, edição, quantidade disponível) e gerenciar exemplares individuais por meio de tombos. (Ator: Administrador) 
+## 8. Referências
 
-**RF13 \- Registro de Empréstimos:** O sistema permite registrar o empréstimo de livros didáticos aos alunos, vinculando o exemplar, a data de empréstimo, a data de devolução prevista e o administrador responsável. (Ator: Administrador)
+O documento original não apresenta referências preenchidas.
 
-**RF14 \- Registro de Devoluções:** O sistema permite registrar a devolução dos livros emprestados, atualizando o histórico e a disponibilidade dos materiais. (Ator: Administrador) 
-
-**RF15 \- Geração de Relatórios:** O sistema deve ser capaz de gerar relatórios e histórico de empréstimos. (Ator: Administrador) 
-
-**RF16 \- Autenticação e Cadastro de Administradores:** O sistema dispõe de telas de cadastro de novos administradores e autenticação por matrícula e senha para acesso restrito às funcionalidades de gestão. (Ator: Administrador) 
-
-## 	Requisitos não-Funcionais {#requisitos-não-funcionais}
-
-**RNF01 \- Interface Web e Acessibilidade:** O sistema deverá possuir uma interface web simples, intuitiva e de fácil compreensão, permitindo a navegação e o gerenciamento sem necessidade de treinamentos complexos
-
-**RNF02 \- Compatibilidade de Ambiente:** O sistema deverá ser compatível com servidores web que suportem PHP e banco de dados MySQL, rodando adequadamente em ambientes Windows e Linux 
-
-**RNF03 \- Segurança e Controle de Acesso:** O sistema deverá garantir a segurança das informações acadêmicas, restringindo estritamente as funcionalidades administrativas e operacionais a usuários autenticados
-
-**RNF04 \- Tecnologias de Desenvolvimento:** O sistema deve ser estruturado utilizando as tecnologias HTML, CSS, JavaScript, PHP e MySQL, conforme a arquitetura proposta para a solução web 
-
-## Riscos {#riscos}
-
-Preencher na tabela os riscos identificados para o início do projeto. Essa tabela deve ser atualizada ao final de cada iteração na reunião de acompanhamento.
-
-| Data | Risco | Prioridade | Responsável | Status | Providência/Solução |
-| :---- | :---- | :---- | :---- | :---- | :---- |
-| 10/09/2026 | Não aprendizado das ferramentas utilizadas pelos componentes do grupo | Alta | Todas | Vigente | Reforçar estudos sobre as ferramentas e aulas com a integrante que conhece a ferramenta |
-| 10/09/2026 | Ausência por qualquer motivo do cliente | Média | Gerente | Vigente | Planejar o cronograma tendo em base a agenda do cliente |
-| 10/09/2026 | Não conclusão das funcionalidades do software no tempo estimado | Baixa | Todas | Vigente | Acompanhar de perto o desenvolvimento de cada membro da equipe |
-
-# Referências {#referências}
-
-(coloque aqui, artigos, livros e sites utilizados e citados no documento)  
+- Outras referências: a definir pela equipe.

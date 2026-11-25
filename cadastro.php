@@ -1,185 +1,539 @@
 <?php
+
 session_start();
-include 'php/conexao.php'; // Inclui o arquivo de conexão
 
-// Verifica se o formulário foi enviado
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Captura os dados do formulário
-    $matricula = $_POST["matricula"];
-    $nome = $_POST["nome"];
-    $senha = $_POST["senha"];
+require_once 'php/auth.php';
+exigirAutenticacao();
 
-    // Verifica se a matrícula já está cadastrada
-    $sql_verificar = "SELECT * FROM administrador WHERE matricula = '$matricula'";
-    $resultado_verificar = $conn->query($sql_verificar);
-    if ($resultado_verificar->num_rows > 0) {
-        echo "Matrícula já cadastrada.";
+require_once 'php/conexao.php';
+require_once 'php/CadastroAdministradorRepository.php';
+require_once 'php/CadastroAdministrador.php';
+
+$mensagem = "";
+$tipoMensagem = "";
+
+$matricula = "";
+$nome = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $matricula = trim($_POST["matricula"] ?? "");
+    $nome = trim($_POST["nome"] ?? "");
+    $senha = $_POST["senha"] ?? "";
+
+    if ($matricula === "") {
+        $mensagem = "A matrícula é obrigatória.";
+        $tipoMensagem = "danger";
+    } elseif ($nome === "") {
+        $mensagem = "O nome é obrigatório.";
+        $tipoMensagem = "danger";
+    } elseif ($senha === "") {
+        $mensagem = "A senha é obrigatória.";
+        $tipoMensagem = "danger";
     } else {
-        // Insere os dados do novo administrador no banco de dados
-        $sql_inserir = "INSERT INTO administrador (matricula, nome, senha) VALUES ('$matricula','$nome', '$senha')";
-        if ($conn->query($sql_inserir) === TRUE) {
-            // Armazena o nome do administrador em uma variável de sessão
-            $_SESSION['nome'] = $nome;
-            $_SESSION['matricula'] = $matricula;
+        $repository = new CadastroAdministradorRepository($conn);
+        $cadastro = new CadastroAdministrador($repository);
 
-            // Redireciona para a tela de login
-            header("Location: login.php");
-            exit(); // Certifique-se de sair do script após o redirecionamento
+        $mensagem = $cadastro->cadastrar($matricula, $nome, $senha);
+
+        if ($mensagem === "Administrador cadastrado com sucesso.") {
+            $tipoMensagem = "success";
+            $matricula = "";
+            $nome = "";
         } else {
-            echo "Erro ao cadastrar o administrador: " . $conn->error;
+            $tipoMensagem = "danger";
         }
     }
 }
-?>
 
+$classeMensagem = in_array($tipoMensagem, ["success", "danger"], true)
+    ? $tipoMensagem
+    : "danger";
+
+?>
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Cadastrar Administrador</title> 
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
+    <title>Cadastrar administrador | HBL Control</title>
 
-  <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+    <link rel="icon" href="images/favicon.png" type="image/png">
 
-  <!-- Fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
 
-  <!-- Owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --primary-dark: #1b4332;
+            --primary-light: #e8f5e9;
+            --background: #f8fafc;
+            --white: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #dc3545;
+            --danger-light: #fff1f2;
+            --success: #198754;
+            --success-light: #ecfdf3;
+        }
 
-  <!-- Font Awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- Nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
-    integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- Datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- Responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            min-height: 100vh;
+            font-family: 'Roboto', sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            width: 100%;
+            min-height: 78px;
+            padding: 0 7%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            color: var(--primary-dark);
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary-dark);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 55px 20px;
+        }
+
+        .content-wrapper {
+            width: 100%;
+            max-width: 1050px;
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            background: var(--white);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.07);
+            border: 1px solid var(--border);
+        }
+
+        .info-panel {
+            background: linear-gradient(
+                145deg,
+                var(--primary),
+                var(--primary-dark)
+            );
+            color: var(--white);
+            padding: 55px 42px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .info-label {
+            display: inline-block;
+            width: fit-content;
+            padding: 8px 13px;
+            margin-bottom: 25px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.13);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .info-panel h1 {
+            max-width: 340px;
+            margin-bottom: 20px;
+            font-size: 34px;
+            line-height: 1.25;
+            font-weight: 700;
+        }
+
+        .info-panel p {
+            max-width: 350px;
+            color: rgba(255, 255, 255, 0.83);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .info-divider {
+            width: 55px;
+            height: 4px;
+            margin-top: 32px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.75);
+        }
+
+        .form-panel {
+            padding: 55px 55px;
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+        }
+
+        .form-header h2 {
+            margin-bottom: 10px;
+            color: var(--text);
+            font-size: 27px;
+            font-weight: 700;
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 9px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            height: 49px;
+            padding: 0 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            background: #ffffff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
+        }
+
+        .alert {
+            margin-bottom: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .alert-success {
+            color: #166534;
+            background: var(--success-light);
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-danger {
+            color: #b91c1c;
+            background: var(--danger-light);
+            border: 1px solid #fecdd3;
+        }
+
+        .submit-button {
+            width: 100%;
+            min-height: 49px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: var(--white);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .submit-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .submit-button:focus-visible,
+        .back-link:focus-visible {
+            outline: 3px solid rgba(45, 106, 79, 0.3);
+            outline-offset: 3px;
+        }
+
+        .footer {
+            padding: 22px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .topbar {
+                min-height: 70px;
+                padding: 0 5%;
+            }
+
+            .brand img {
+                width: 43px;
+                height: 43px;
+            }
+
+            .brand-name {
+                font-size: 18px;
+            }
+
+            .content-wrapper {
+                max-width: 520px;
+                grid-template-columns: 1fr;
+            }
+
+            .info-panel {
+                padding: 35px 30px;
+            }
+
+            .info-panel h1 {
+                font-size: 27px;
+            }
+
+            .info-panel p {
+                font-size: 14px;
+            }
+
+            .info-divider {
+                margin-top: 22px;
+            }
+
+            .form-panel {
+                padding: 38px 30px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .topbar {
+                padding: 0 18px;
+            }
+
+            .brand-name {
+                font-size: 16px;
+            }
+
+            .back-link {
+                font-size: 12px;
+            }
+
+            .main-content {
+                padding: 30px 14px;
+            }
+
+            .info-panel,
+            .form-panel {
+                padding: 30px 22px;
+            }
+
+            .form-header h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
 
-<body class="sub_page">
+<body>
 
-  <div class="hero_area">
-    <!-- header section starts -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
+    <div class="page-container">
+
+        <header class="topbar">
+
+            <a href="funcoes.php" class="brand">
+                <img
+                    src="images/White and navy simple book store logo.png"
+                    alt="Logo HBL Control"
+                >
+                <span class="brand-name">HBL Control</span>
             </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
+
+            <a href="funcoes.php" class="back-link">
+                <span aria-hidden="true">&larr;</span>
+                Voltar ao painel
             </a>
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" >
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
-            </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav  ">
-                  <li class="nav-item ">
-                    <a class="nav-link" href="index.html">HOME <span class="sr-only">(current)</span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="quote_btn-container">
-                <a href="login.php">
-                  <i class="fa fa-user" aria-hidden="true"></i>
-                  <span>
-                    Login
-                  </span>
-                </a>
-              </div>
+        </header>
+
+        <main class="main-content">
+
+            <div class="content-wrapper">
+
+                <section class="info-panel">
+
+                    <span class="info-label">Área administrativa</span>
+
+                    <h1>Gerencie os acessos do sistema.</h1>
+
+                    <p>
+                        Cadastre novos administradores para permitir que
+                        outros responsáveis tenham acesso às funcionalidades
+                        de gerenciamento do HBL Control.
+                    </p>
+
+                    <div class="info-divider"></div>
+
+                </section>
+
+                <section class="form-panel">
+
+                    <div class="form-header">
+
+                        <h2>Cadastrar administrador</h2>
+
+                        <p>
+                            Preencha os campos abaixo para registrar um
+                            novo administrador no sistema.
+                        </p>
+
+                    </div>
+
+                    <?php if ($mensagem !== ""): ?>
+
+                        <div
+                            class="alert alert-<?php echo htmlspecialchars($classeMensagem, ENT_QUOTES, 'UTF-8'); ?>"
+                            role="alert"
+                        >
+                            <?php echo htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8'); ?>
+                        </div>
+
+                    <?php endif; ?>
+
+                    <form
+                        method="post"
+                        action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"], ENT_QUOTES, 'UTF-8'); ?>"
+                    >
+
+                        <div class="form-group">
+
+                            <label for="matricula">Matrícula</label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="matricula"
+                                name="matricula"
+                                placeholder="Digite a matrícula"
+                                value="<?php echo htmlspecialchars($matricula, ENT_QUOTES, 'UTF-8'); ?>"
+                                autocomplete="username"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="nome">Nome completo</label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="nome"
+                                name="nome"
+                                placeholder="Digite o nome completo"
+                                value="<?php echo htmlspecialchars($nome, ENT_QUOTES, 'UTF-8'); ?>"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="senha">Senha</label>
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="senha"
+                                name="senha"
+                                placeholder="Crie uma senha"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                        </div>
+
+                        <button type="submit" class="submit-button">
+                            Cadastrar administrador
+                        </button>
+
+                    </form>
+
+                </section>
+
             </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-    <!-- end header section -->
-    
-    <!-- Formulário de Cadastro -->
-    <section class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="heading_container">
-            <h2>
-              CADASTRAR-SE
-            </h2>
-          </div>
-          <form method="post" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
-            <div class="form-group">
-              <input type="text" class="form-control" placeholder="Matrícula" name="matricula">
-            </div>
-            <div class="form-group">
-              <input type="text" class="form-control" placeholder="Nome" name="nome">
-            </div>
-            <div class="form-group">
-            <form method="post" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
-            
-            <div class="form-group">
-              <input type="password" class="form-control" placeholder="Senha" name="senha">
-            </div>
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Cadastrar</button>
-          </form>
-        </div>
-      </div>
-    </section>
-    <!-- Fim do Formulário de Cadastro -->
-  </div>
 
-  <!-- footer section -->
-  
-  <script src="js/jquery-3.4.1.min.js"></script>
- 
-  <script src="js/bootstrap.js"></script>
- 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js" integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
+        </main>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+        <footer class="footer">
+            Sistema HBL Control &copy; <?php echo date("Y"); ?>
+        </footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
-
-  <script src="js/custom.js"></script>
+    </div>
 
 </body>
 

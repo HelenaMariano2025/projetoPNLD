@@ -1,180 +1,195 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<?php
 
-  <title>Livros Disponíveis</title>
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
 
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
-  <link href="css/font-awesome.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <link href="css/style.css" rel="stylesheet">
-  <link href="css/responsive.css" rel="stylesheet">
-</head>
+require_once __DIR__ . '/php/auth.php';
+exigirAutenticacao();
 
-<body class="sub_page">
-  <div class="hero_area">
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>Contato : +01 123455678990</span>
+require_once __DIR__ . '/php/conexao.php';
+require_once __DIR__ . '/php/LivroRepository.php';
+
+$titulo = isset($_GET['titulo']) && is_string($_GET['titulo'])
+    ? trim($_GET['titulo'])
+    : '';
+
+$livros = [];
+$erroConsulta = false;
+
+try {
+    $repository = new LivroRepository($conn);
+    $resultado = $repository->consultarTodos($titulo);
+
+    if ($resultado === false) {
+        $erroConsulta = true;
+    } else {
+        $livros = $resultado->fetch_all(MYSQLI_ASSOC);
+        $resultado->free();
+    }
+} catch (mysqli_sql_exception $erro) {
+    $erroConsulta = true;
+} finally {
+    $conn->close();
+}
+
+$exclusao = $_GET['exclusao'] ?? '';
+
+$paginaAtiva = 'livros';
+$tituloPagina = 'Gerenciar Livros — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
+?>
+
+<main class="container my-4">
+
+    <section class="painel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>Gerenciar livros</h1>
+                <p class="text-muted mb-0">
+                    Consulte, pesquise e gerencie os livros do acervo didático.
+                </p>
+            </div>
+
+            <a href="add_livro.php" class="btn btn-primary mt-2">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Adicionar livro
             </a>
-
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>Email : ifpb@gmail.com</span>
-            </a>
-
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>Localização</span>
-            </a>
-          </div>
         </div>
-      </div>
+    </section>
 
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container">
-            <a class="navbar-brand">
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
+    <?php if ($exclusao === 'sucesso'): ?>
+        <div class="alert alert-success" role="alert">
+            Livro excluído com sucesso.
+        </div>
+    <?php elseif ($exclusao === 'erro'): ?>
+        <div class="alert alert-danger" role="alert">
+            Não foi possível excluir o livro. Livros vinculados a
+            empréstimos ou devoluções não podem ser excluídos.
+        </div>
+    <?php endif; ?>
 
-            <button
-              class="navbar-toggler"
-              type="button"
-              data-toggle="collapse"
-              data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span></span>
+    <section class="painel">
+        <h2>Livros cadastrados</h2>
+        <p class="text-muted">
+            Consulte os livros do acervo, incluindo os inativos e sem estoque.
+        </p>
+
+        <form action="livros.php" method="get" class="mb-4">
+            <div class="form-group">
+                <label for="titulo">Pesquisar por título</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="titulo"
+                    name="titulo"
+                    value="<?= escapar($titulo) ?>"
+                    placeholder="Digite o título do livro"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-search" aria-hidden="true"></i>
+                Buscar
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav">
-                  <li class="nav-item">
-                    <a class="nav-link" href="funcoes.php">HOME</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="add_livro.php">ADICIONAR LIVRO</a>
-                  </li>
-                </ul>
-              </div>
+            <a href="livros.php" class="btn btn-secondary">
+                Limpar pesquisa
+            </a>
+        </form>
+
+        <?php if ($erroConsulta): ?>
+
+            <div class="alert alert-danger" role="alert">
+                Não foi possível consultar os livros. Tente novamente.
             </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-  </div>
 
-  <section class="client_section layout_padding">
-    <div class="container">
-      <div class="heading_container">
-        <h2><span>Livros</span></h2>
-      </div>
+        <?php elseif ($livros === []): ?>
 
-      <?php if (($_GET['exclusao'] ?? '') === 'sucesso'): ?>
-        <p role="status">Livro excluído da listagem com sucesso.</p>
-      <?php elseif (($_GET['exclusao'] ?? '') === 'erro'): ?>
-        <p role="alert">Não foi possível excluir o livro.</p>
-      <?php endif; ?>
-    </div>
+            <div class="alert alert-info mb-0" role="alert">
+                <?= $titulo !== ''
+                    ? 'Nenhum livro encontrado para o título informado.'
+                    : 'Nenhum livro cadastrado.' ?>
+            </div>
 
-    <div class="container px-0">
-      <div id="customCarousel2" class="carousel carousel-fade" data-ride="carousel">
-        <div class="carousel-inner">
-          <div class="search_container">
-            <form
-              action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>"
-              method="get"
-            >
-              <input type="text" name="titulo" placeholder="Buscar por título do livro">
-              <button type="submit">Buscar</button>
-            </form>
-          </div>
+        <?php else: ?>
 
-          <?php
-          require_once __DIR__ . '/php/conexao.php';
-          require_once __DIR__ . '/php/LivroRepository.php';
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <caption>
+                        Livros do acervo, incluindo inativos e sem estoque.
+                    </caption>
 
-          $repository = new LivroRepository($conn);
-          $titulo = isset($_GET['titulo']) ? (string) $_GET['titulo'] : null;
-          $result = $repository->consultarDisponiveis($titulo);
+                    <thead>
+                        <tr>
+                            <th scope="col">ISBN</th>
+                            <th scope="col">Título</th>
+                            <th scope="col">Autor</th>
+                            <th scope="col">Código da editora</th>
+                            <th scope="col">Ano</th>
+                            <th scope="col">Edição</th>
+                            <th scope="col">Situação</th>
+                            <th scope="col">Quantidade disponível</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
 
-          if ($result !== false && $result->num_rows > 0) {
-              $count = 0;
+                    <tbody>
+                        <?php foreach ($livros as $livro): ?>
+                            <tr>
+                                <td><?= escapar($livro['isbn']) ?></td>
+                                <td><?= escapar($livro['titulo']) ?></td>
+                                <td><?= escapar($livro['autor']) ?></td>
+                                <td><?= escapar($livro['codigo_editora']) ?></td>
+                                <td><?= escapar($livro['ano']) ?></td>
+                                <td><?= escapar($livro['edicao']) ?></td>
+                                <td><?= escapar($livro['situacao']) ?></td>
+                                <td><?= escapar($livro['qtde_disponivel']) ?></td>
 
-              while ($row = $result->fetch_assoc()) {
-                  $activeClass = $count === 0 ? 'active' : '';
-                  $codigo = (int) $row['codigo'];
+                                <td>
+                                    <div class="d-flex flex-wrap">
+                                        <a
+                                            href="editar_livro.php?codigo=<?= (int) $livro['codigo'] ?>"
+                                            class="btn btn-primary btn-sm mr-2 mb-1"
+                                        >
+                                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                                            Editar
+                                        </a>
 
-                  echo "<div class='carousel-item $activeClass'>";
-                  echo "<div class='box'>";
-                  echo "<div class='client_info'>";
-                  echo "<div class='client_name'>";
-                  echo '<h5>' . htmlspecialchars((string) $row['isbn'], ENT_QUOTES, 'UTF-8') . '</h5>';
-                  echo '<h6>' . htmlspecialchars((string) $row['titulo'], ENT_QUOTES, 'UTF-8') . '</h6>';
-                  echo '</div>';
-                  echo '</div>';
+                                        <form
+                                            action="excluir_livro.php"
+                                            method="post"
+                                            onsubmit="return confirm('Deseja excluir permanentemente este livro?')"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="codigo"
+                                                value="<?= (int) $livro['codigo'] ?>"
+                                            >
 
-                  echo '<p>' . htmlspecialchars((string) $row['autor'], ENT_QUOTES, 'UTF-8') . '</p>';
-                  echo '<p><a href="editar_livro.php?codigo=' . $codigo . '">Editar livro</a></p>';
+                                            <button
+                                                type="submit"
+                                                class="btn btn-danger btn-sm mb-1"
+                                            >
+                                                <i class="fa fa-trash" aria-hidden="true"></i>
+                                                Excluir
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
 
-                  echo '<form action="excluir_livro.php" method="post" '
-                      . 'onsubmit="return confirm(\'Deseja excluir este livro da listagem?\')">';
-                  echo '<input type="hidden" name="codigo" value="' . $codigo . '">';
-                  echo '<button type="submit">Excluir livro</button>';
-                  echo '</form>';
+            <p class="text-muted mb-0">
+                Total de livros encontrados: <?= count($livros) ?>
+            </p>
 
-                  echo '</div>';
-                  echo '</div>';
+        <?php endif; ?>
+    </section>
 
-                  $count++;
-              }
-          } else {
-              echo "<div class='carousel-item active'>";
-              echo "<div class='box'>";
-              echo '<p>Nenhum livro disponível no momento.</p>';
-              echo '</div>';
-              echo '</div>';
-          }
+</main>
 
-          $conn->close();
-          ?>
-        </div>
-
-        <div class="carousel_btn-box">
-          <a class="carousel-control-prev" href="#customCarousel2" role="button" data-slide="prev">
-            <i class="fa fa-angle-left" aria-hidden="true"></i>
-            <span class="sr-only">Anterior</span>
-          </a>
-
-          <a class="carousel-control-next" href="#customCarousel2" role="button" data-slide="next">
-            <i class="fa fa-angle-right" aria-hidden="true"></i>
-            <span class="sr-only">Próximo</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <script src="js/jquery-3.4.1.min.js"></script>
-  <script src="js/bootstrap.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
-  <script src="js/custom.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

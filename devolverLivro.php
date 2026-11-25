@@ -1,14 +1,32 @@
-<?php 
+<?php
+
+use App\EmprestimoRepository;
 
 session_start();
+exigirAutenticacao();
 
-include 'php/conexao.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once 'php/conexao.php';
 
-$id = $_GET['id'];
-$data = date("Y-m-d");
-$query_add = "INSERT INTO devolucao VALUES (NULL, '$id', '$data')";
+$id = (int) ($_GET['id'] ?? 0);
+$data = date('Y-m-d');
 
-mysqli_query($conn, $query_add);
-header("Location: emprestimosDevolucoes.php");
+if ($id > 0) {
+    $repository = new EmprestimoRepository($conn);
 
-?>
+    $sucesso = $repository->registrarDevolucao(
+        $id,
+        $data
+    );
+
+    if ($sucesso) {
+        $_SESSION['mensagem'] = 'Livro devolvido com sucesso!';
+    } else {
+        $_SESSION['mensagem'] = 'Não foi possível registrar a devolução. Verifique se o empréstimo já foi devolvido.';
+    }
+}
+
+$conn->close();
+
+header('Location: emprestimosDevolucoes.php');
+exit;

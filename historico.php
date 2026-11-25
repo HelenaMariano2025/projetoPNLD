@@ -1,272 +1,191 @@
 <?php
-require 'php/conexao.php';
 
-$query = "
-    SELECT 
-        emprestimo.codigo_emprestimo,
-        livro.titulo AS livro,
-        aluno.nome AS aluno,
-        aluno.matricula,
-        emprestimo.dataEmprestimo,
-        emprestimo.dataDevolucao,
-        devolucao.dataDevolucao AS data_devolucao_real
-    FROM emprestimo
-    INNER JOIN livro 
-        ON emprestimo.codigo_livro = livro.codigo
-    INNER JOIN aluno 
-        ON emprestimo.matricula_aluno = aluno.matricula
-    LEFT JOIN devolucao 
-        ON emprestimo.codigo_emprestimo = devolucao.codigo_emprestimo
-    ORDER BY emprestimo.codigo_emprestimo DESC
-";
+const FORMATO_DATA = 'd/m/Y';
 
-$resultado = $conn->query($query);
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
+
+require_once __DIR__ . '/php/auth.php';
+exigirAutenticacao();
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+require_once __DIR__ . '/php/conexao.php';
+
+$historico = [];
+$erroConsulta = false;
+
+try {
+    $query = "
+        SELECT
+            emprestimo.codigo_emprestimo,
+            livro.titulo AS livro,
+            aluno.nome AS aluno,
+            aluno.matricula,
+            emprestimo.dataEmprestimo,
+            emprestimo.dataDevolucao,
+            devolucao.dataDevolucao AS data_devolucao_real
+        FROM emprestimo
+        INNER JOIN livro
+            ON emprestimo.codigo_livro = livro.codigo
+        INNER JOIN aluno
+            ON emprestimo.matricula_aluno = aluno.matricula
+        LEFT JOIN devolucao
+            ON emprestimo.codigo_emprestimo = devolucao.codigo_emprestimo
+        ORDER BY emprestimo.codigo_emprestimo DESC
+    ";
+
+    $resultado = $conn->query($query);
+    $historico = $resultado->fetch_all(MYSQLI_ASSOC);
+
+    $resultado->free();
+} catch (mysqli_sql_exception $erro) {
+    $erroConsulta = true;
+}
+
+$conn->close();
+
+$paginaAtiva = 'historico';
+$tituloPagina = 'Histórico de Empréstimos — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+<main class="container my-4">
 
-  <title>Historico</title> 
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
+    <section class="painel">
+        <h1>Histórico de empréstimos</h1>
+        <p class="text-muted mb-0">
+            Consulte os empréstimos realizados, as datas previstas e a situação das devoluções.
+        </p>
+    </section>
 
-  <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
-  <!-- Fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-
-  <!-- Owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-
-  <!-- Font Awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- Nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
-    integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- Datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- Responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
-</head>
-<body>
-<div class="hero_area">
-    <!-- header section starts -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand">
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav  ">
-                  <li class="nav-item ">
-                    <a class="nav-link" href="funcoes.php">HOME <span class="sr-only">(current)</span></a>
-                  </li>
-
-                </ul>
-              </div>
+    <section class="painel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <div>
+                <h2>Relatório de empréstimos</h2>
+                <p class="text-muted mb-0">
+                    Acompanhe todos os registros de empréstimos do sistema.
+                </p>
             </div>
-          </nav>
+
+            <?php if (!$erroConsulta): ?>
+                <span class="text-muted">
+                    <?= count($historico) ?>
+                    <?= count($historico) === 1 ? 'registro' : 'registros' ?>
+                </span>
+            <?php endif; ?>
         </div>
-      </div>
-    </header> 
-      <section class="historico_section">
 
-          <div class="container">
+        <?php if ($erroConsulta): ?>
 
-              <div class="heading_container">
+            <div class="alert alert-danger" role="alert">
+                Não foi possível carregar o histórico de empréstimos.
+                Tente novamente mais tarde.
+            </div>
 
-                  <h2>
-                      Relatório de Empréstimos
-                  </h2>
+        <?php elseif (empty($historico)): ?>
 
-                  <p>
-                      Consulte o histórico de empréstimos realizados no sistema.
-                  </p>
+            <div class="alert alert-info mb-0" role="alert">
+                Nenhum registro de empréstimo encontrado.
+            </div>
 
-              </div>
+        <?php else: ?>
 
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">Código</th>
+                            <th scope="col">Livro</th>
+                            <th scope="col">Aluno</th>
+                            <th scope="col">Matrícula</th>
+                            <th scope="col">Data do empréstimo</th>
+                            <th scope="col">Data prevista</th>
+                            <th scope="col">Data da devolução</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
 
-              <div class="table-responsive">
+                    <tbody>
+                        <?php foreach ($historico as $row): ?>
 
-                  <table class="table">
-
-                      <thead>
-
-                          <tr>
-                              <th>Código</th>
-                              <th>Livro</th>
-                              <th>Aluno</th>
-                              <th>Matrícula</th>
-                              <th>Data do empréstimo</th>
-                              <th>Data prevista</th>
-                              <th>Data da devolução</th>
-                              <th>Status</th>
-                          </tr>
-
-                      </thead>
-
-                      <tbody> 
-                        <?php
-
-                        if ($resultado && $resultado->num_rows > 0) {
-
-                            while ($row = $resultado->fetch_assoc()) {
-
-                                $dataEmprestimo = date(
-                                    "d/m/Y",
-                                    strtotime($row['dataEmprestimo'])
-                                );
-
-                                $dataPrevista = date(
-                                    "d/m/Y",
-                                    strtotime($row['dataDevolucao'])
-                                );
-
-
-                                if (!empty($row['data_devolucao_real'])) {
-
-                                    $dataDevolucao = date(
-                                        "d/m/Y",
-                                        strtotime($row['data_devolucao_real'])
-                                    );
-
-                                    $status = "Devolvido";
-
-                                } else {
-
-                                    $dataDevolucao = "-";
-
-                                    if (strtotime($row['dataDevolucao']) < time()) {
-
-                                        $status = "Atrasado";
-
-                                    } else {
-
-                                        $status = "Em andamento";
-
-                                    }
-
-                                }
-
-                                ?>
-
-                                <tr>
-
-                                    <td>
-                                        <?php
-                                        echo $row['codigo_emprestimo'];
-                                        ?>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        echo htmlspecialchars($row['livro']);
-                                        ?>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        echo htmlspecialchars($row['aluno']);
-                                        ?>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        echo $row['matricula'];
-                                        ?>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        echo $dataEmprestimo;
-                                        ?>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        echo $dataPrevista;
-                                        ?>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        echo $dataDevolucao;
-                                        ?>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        echo $status;
-                                        ?>
-                                    </td>
-
-                                </tr>
-
-                                <?php
-                            }
-                        } else {  
-                            ?>
-                            <tr>
-                                <td colspan="8">Nenhum registro encontrado.</td>
-                            </tr>
                             <?php
-                        } 
-                         ?>
-                      </tbody>
-                      </table>
-              </div>
-            </div>
-      </section>
-  </div>
+                            $dataEmprestimo = date(
+                                FORMATO_DATA,
+                                strtotime($row['dataEmprestimo'])
+                            );
 
-</body>
-</html>
+                            $dataPrevista = date(
+                                FORMATO_DATA,
+                                strtotime($row['dataDevolucao'])
+                            );
+
+                            if (!empty($row['data_devolucao_real'])) {
+                                $dataDevolucao = date(
+                                    FORMATO_DATA,
+                                    strtotime($row['data_devolucao_real'])
+                                );
+
+                                $status = 'Devolvido';
+                                $classeStatus = 'badge-success';
+                            } else {
+                                $dataDevolucao = '-';
+
+                                if (strtotime($row['dataDevolucao']) < time()) {
+                                    $status = 'Atrasado';
+                                    $classeStatus = 'badge-danger';
+                                } else {
+                                    $status = 'Em andamento';
+                                    $classeStatus = 'badge-warning';
+                                }
+                            }
+                            ?>
+
+                            <tr>
+                                <td>
+                                    <?= (int) $row['codigo_emprestimo'] ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars($row['livro'], ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars($row['aluno'], ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars((string) $row['matricula'], ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars($dataEmprestimo, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars($dataPrevista, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td>
+                                    <?= htmlspecialchars($dataDevolucao, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td>
+                                    <span class="badge <?= $classeStatus ?>">
+                                        <?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>
+                                    </span>
+                                </td>
+                            </tr>
+
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+        <?php endif; ?>
+    </section>
+
+</main>
+
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

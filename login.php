@@ -1,36 +1,46 @@
 <?php
-session_start();
-include 'php/conexao.php';
+require_once 'php/http.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $matricula = $_POST["matricula"];
-    $senha = $_POST["senha"];
+iniciarSessao();
 
-    $sql = "SELECT * FROM administrador WHERE matricula = '$matricula'";
-    $resultado = $conn->query($sql);
+require_once 'php/conexao.php';
+require_once 'php/AdministradorRepository.php';
+require_once 'php/regras.php';
 
-    if ($resultado->num_rows == 1) {
-        $row = $resultado->fetch_assoc();
+$repository = new AdministradorRepository($conn);
+$erro = '';
 
-        if ($senha === $row["senha"]) {
-            $_SESSION["matricula"] = $matricula;
-            $_SESSION["nome"] = $row["nome"];
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $matricula = trim($_POST["matricula"] ?? '');
+    $senha = $_POST["senha"] ?? '';
+
+    if (!validarCampoObrigatorio($matricula) || !validarCampoObrigatorio($senha)) {
+        $erro = "Preencha sua matrícula e senha para continuar.";
+    } else {
+        $administrador = autenticarAdministrador(
+            $matricula,
+            $senha,
+            $repository
+        );
+
+        if ($administrador !== null) {
+            regenerarSessao();
+
+            $_SESSION["matricula"] = $administrador["matricula"];
+            $_SESSION["nome"] = $administrador["nome"];
 
             if (
                 isset($_COOKIE['cookies_aceitos']) &&
-                $_COOKIE['cookies_aceitos'] == 'true'
+                $_COOKIE['cookies_aceitos'] === 'true'
             ) {
-                setcookie("matricula", $matricula, time() + 604800, "/");
-                setcookie("nome", $row["nome"], time() + 604800, "/");
+                definirCookie("matricula", $administrador["matricula"]);
+                definirCookie("nome", $administrador["nome"]);
             }
 
-            header("Location: funcoes.php");
-            exit();
-        } else {
-            echo "Senha incorreta.";
+            redirecionar("funcoes.php");
         }
-    } else {
-        echo "Matrícula não encontrada.";
+
+        $erro = "Matrícula ou senha inválida. Verifique seus dados e tente novamente.";
     }
 }
 ?>
@@ -39,191 +49,568 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="pt-br">
 
 <head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Autenticar Administrador</title> 
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
+    <title>Entrar | Sistema HBL Control</title>
 
-  <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
 
-  <!-- Fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <style>
+        :root {
+            --verde-principal: #2d6a4f;
+            --verde-hover: #1b4332;
+            --verde-claro: #e8f5e9;
+            --fundo: #f8fafc;
+            --branco: #ffffff;
+            --texto: #1e293b;
+            --texto-secundario: #64748b;
+            --borda: #e2e8f0;
+            --erro: #b42318;
+            --erro-fundo: #fef3f2;
+        }
 
-  <!-- Font Awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- Nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
-    integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- Datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- Responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <!-- Banner de Consentimento de Cookies -->
-  <style>
-    #cookieConsent {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background-color: #000;
-      color: white;
-      text-align: center;
-      padding: 10px;
-    }
-  </style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--fundo);
+            color: var(--texto);
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .pagina {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cabecalho {
+            width: 100%;
+            min-height: 82px;
+            background: var(--branco);
+            border-bottom: 1px solid var(--borda);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 7%;
+        }
+
+        .marca {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .marca img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+        }
+
+        .marca-texto {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .marca-texto strong {
+            font-size: 19px;
+            color: var(--verde-principal);
+            font-weight: 800;
+        }
+
+        .marca-texto span {
+            font-size: 11px;
+            color: var(--texto-secundario);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .voltar {
+            color: var(--texto-secundario);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .voltar:hover {
+            color: var(--verde-principal);
+        }
+
+        .conteudo {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 55px 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 1050px;
+            min-height: 550px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: var(--branco);
+            border: 1px solid var(--borda);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
+        }
+
+        .painel-info {
+            background: var(--verde-principal);
+            color: var(--branco);
+            padding: 65px 55px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .painel-info::before,
+        .painel-info::after {
+            content: "";
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+        }
+
+        .painel-info::before {
+            width: 330px;
+            height: 330px;
+            right: -160px;
+            top: -100px;
+        }
+
+        .painel-info::after {
+            width: 260px;
+            height: 260px;
+            left: -150px;
+            bottom: -100px;
+        }
+
+        .painel-conteudo {
+            position: relative;
+            z-index: 1;
+        }
+
+        .icone-livro {
+            width: 68px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            margin-bottom: 32px;
+            font-size: 31px;
+        }
+
+        .painel-info h1 {
+            font-size: 31px;
+            line-height: 1.3;
+            margin-bottom: 18px;
+            font-weight: 800;
+        }
+
+        .painel-info p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 15px;
+            line-height: 1.8;
+            max-width: 380px;
+        }
+
+        .painel-detalhe {
+            margin-top: 38px;
+            padding-top: 22px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 13px;
+        }
+
+        .painel-formulario {
+            padding: 65px 55px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .etiqueta {
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            padding: 7px 12px;
+            background: var(--verde-claro);
+            color: var(--verde-principal);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .painel-formulario h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            color: var(--texto-secundario);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .campo {
+            margin-bottom: 21px;
+        }
+
+        .campo label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 9px;
+            color: var(--texto);
+        }
+
+        .campo input {
+            width: 100%;
+            height: 49px;
+            padding: 0 15px;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--texto);
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .campo input::placeholder {
+            color: #94a3b8;
+        }
+
+        .campo input:focus {
+            border-color: var(--verde-principal);
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.10);
+        }
+
+        .botao-entrar {
+            width: 100%;
+            height: 49px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 8px;
+            background: var(--verde-principal);
+            color: var(--branco);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .botao-entrar:hover {
+            background: var(--verde-hover);
+            transform: translateY(-1px);
+        }
+
+        .mensagem-erro {
+            padding: 13px 15px;
+            margin-bottom: 22px;
+            border: 1px solid #fecdca;
+            border-radius: 8px;
+            background: var(--erro-fundo);
+            color: var(--erro);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .rodape {
+            padding: 22px 20px;
+            text-align: center;
+            color: var(--texto-secundario);
+            font-size: 12px;
+            border-top: 1px solid var(--borda);
+            background: var(--branco);
+        }
+
+        #cookieConsent {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 600px;
+            padding: 17px 20px;
+            background: var(--branco);
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.15);
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        #cookieConsent p {
+            color: var(--texto-secundario);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        #acceptCookies {
+            flex-shrink: 0;
+            padding: 10px 17px;
+            background: var(--verde-principal);
+            color: var(--branco);
+            border: none;
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #acceptCookies:hover {
+            background: var(--verde-hover);
+        }
+
+        @media (max-width: 760px) {
+            .cabecalho {
+                padding: 0 5%;
+                min-height: 72px;
+            }
+
+            .login-container {
+                max-width: 480px;
+                grid-template-columns: 1fr;
+            }
+
+            .painel-info {
+                padding: 35px 30px;
+            }
+
+            .icone-livro {
+                width: 52px;
+                height: 52px;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .painel-info h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            .painel-info p {
+                font-size: 13px;
+            }
+
+            .painel-detalhe {
+                margin-top: 20px;
+                padding-top: 15px;
+            }
+
+            .painel-formulario {
+                padding: 40px 30px;
+            }
+
+            .conteudo {
+                padding: 30px 15px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .marca-texto strong {
+                font-size: 16px;
+            }
+
+            .marca img {
+                width: 42px;
+                height: 42px;
+            }
+
+            .voltar {
+                font-size: 12px;
+            }
+
+            .painel-formulario h2 {
+                font-size: 24px;
+            }
+
+            #cookieConsent {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
 </head>
 
-<body class="sub_page">
-  <!-- Banner de Consentimento de Cookies -->
-  <div id="cookieConsent">
-    Este site utiliza cookies para melhorar sua experiência. 
-    <button id="acceptCookies" style="margin-left: 15px; background-color: #28a745; color: white; padding: 5px 10px; border: none; cursor: pointer;">Aceitar</button>
-  </div>
+<body>
 
-  <script>
-    // Verifica se o cookie de consentimento já foi definido
-    function checkCookieConsent() {
-        return document.cookie.split(';').some((cookie) => cookie.trim().startsWith('cookies_aceitos='));
-    }
+    <div class="pagina">
 
-    // Função para ocultar o banner e definir o cookie de consentimento
-    function acceptCookies() {
-        // Define o cookie de consentimento que expira em 365 dias
-        document.cookie = "cookies_aceitos=true; path=/; max-age=" + (365*24*60*60);
-        document.getElementById('cookieConsent').style.display = 'none';
-    }
+        <header class="cabecalho">
+            <a href="index.html" class="marca">
+                <img src="images/White and navy simple book store logo.png" alt="Logo do Sistema HBL Control">
 
-    // Exibe o banner se o consentimento ainda não foi dado
-    window.onload = function() {
-        if (!checkCookieConsent()) {
-            document.getElementById('cookieConsent').style.display = 'block';
+                <div class="marca-texto">
+                    <strong>HBL Control</strong>
+                    <span>Gestão de livros didáticos</span>
+                </div>
+            </a>
+
+            <a href="index.html" class="voltar">
+                Voltar ao início
+            </a>
+        </header>
+
+        <main class="conteudo">
+
+            <div class="login-container">
+
+                <section class="painel-info">
+                    <div class="painel-conteudo">
+
+                        <div class="icone-livro">
+                            <span aria-hidden="true">📚</span>
+                        </div>
+
+                        <h1>Organização e controle em um só lugar.</h1>
+
+                        <p>
+                            O Sistema HBL Control facilita o gerenciamento
+                            de alunos, turmas, livros didáticos e empréstimos,
+                            contribuindo para uma gestão mais organizada e eficiente.
+                        </p>
+
+                        <div class="painel-detalhe">
+                            Sistema de gerenciamento de livros didáticos
+                        </div>
+
+                    </div>
+                </section>
+
+                <section class="painel-formulario">
+
+                    <span class="etiqueta">Área administrativa</span>
+
+                    <h2>Bem-vindo!</h2>
+
+                    <p class="subtitulo">
+                        Entre com suas credenciais para acessar o sistema.
+                    </p>
+
+                    <?php if ($erro !== ''): ?>
+                        <div class="mensagem-erro" role="alert">
+                            <?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="post" action="<?= htmlspecialchars($_SERVER["PHP_SELF"], ENT_QUOTES, 'UTF-8') ?>">
+
+                        <div class="campo">
+                            <label for="matricula">Matrícula</label>
+
+                            <input
+                                type="text"
+                                id="matricula"
+                                name="matricula"
+                                placeholder="Digite sua matrícula"
+                                value="<?= htmlspecialchars($matricula ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                autocomplete="username"
+                                required
+                            >
+                        </div>
+
+                        <div class="campo">
+                            <label for="senha">Senha</label>
+
+                            <input
+                                type="password"
+                                id="senha"
+                                name="senha"
+                                placeholder="Digite sua senha"
+                                autocomplete="current-password"
+                                required
+                            >
+                        </div>
+
+                        <button type="submit" class="botao-entrar">
+                            Entrar no sistema
+                        </button>
+
+                    </form>
+
+                </section>
+
+            </div>
+
+        </main>
+
+        <footer class="rodape">
+            Sistema HBL Control — Gestão de livros didáticos
+        </footer>
+
+    </div>
+
+    <div id="cookieConsent">
+        <p>
+            Utilizamos cookies para melhorar sua experiência.
+            Você pode aceitar o armazenamento de suas preferências.
+        </p>
+
+        <button id="acceptCookies" type="button">
+            Aceitar
+        </button>
+    </div>
+
+    <script>
+        function verificarConsentimento() {
+            return document.cookie
+                .split(';')
+                .some(cookie => cookie.trim().startsWith('cookies_aceitos=true'));
         }
 
-        // Ação ao clicar no botão "Aceitar"
-        document.getElementById('acceptCookies').onclick = function() {
-            acceptCookies();
+        function aceitarCookies() {
+            document.cookie =
+                "cookies_aceitos=true; path=/; max-age=" + (365 * 24 * 60 * 60) + "; SameSite=Lax";
+
+            document.getElementById('cookieConsent').style.display = 'none';
         }
-    }
-  </script>
-  <div class="hero_area">
-    <!-- header section starts -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" >
-              <img src="images/White and navy simple book store logo.png"alt="">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
-            </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav  ">
-                  <li class="nav-item ">
-                    <a class="nav-link" href="index.html">HOME <span class="sr-only">(current)</span></a>
-                  </li>
+        document.addEventListener('DOMContentLoaded', function () {
+            const banner = document.getElementById('cookieConsent');
+            const botao = document.getElementById('acceptCookies');
 
-                
-                  </li>
-                </ul>
-              </div>
-              <div class="quote_btn-container">
-                <a href="cadastro.php">
-                  <i class="fa fa-user" aria-hidden="true"></i>
-                  <span>
-                    Cadastro
-                  </span>
-                </a>
-              </div>
-            </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-    <!-- end header section -->
-    
-    <!-- Formulário de Login -->
-    <section class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="heading_container">
-            <h2>
-              AUTENTICAÇÃO
-            </h2>
-          </div>
-          <form method="post" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
-            <div class="form-group">
-              <input type="text" class="form-control" placeholder="Matrícula" name="matricula">
-            </div>
-            <div class="form-group">
-              <input type="password" class="form-control" placeholder="Senha" name="senha">
-            </div>
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Entrar</button>
-          </form>
-        </div>
-      </div>
-    </section>
-    <!-- Fim do Formulário de Login -->
-  </div>
+            if (!verificarConsentimento()) {
+                banner.style.display = 'flex';
+            }
 
-  <!-- footer section -->
-  
-  <script src="js/jquery-3.4.1.min.js"></script>
- 
-  <script src="js/bootstrap.js"></script>
- 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js" integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
-
-  <script src="js/custom.js"></script>
+            botao.addEventListener('click', aceitarCookies);
+        });
+    </script>
 
 </body>
-
 </html>

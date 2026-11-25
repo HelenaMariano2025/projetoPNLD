@@ -1,0 +1,11 @@
+vendor/
+.phpunit.result.cache
+composer-setup.php
+coverage.xml
+coverage-alunos.xml
+.scannerwork/
+coverage-html/
+docs/mutation/infection.html
+docs/mutation/infection.log
+coverage.xml
+coverage-alunos.xml

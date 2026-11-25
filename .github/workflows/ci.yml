@@ -1,10 +1,11 @@
-name: CI - Testes e Qualidade
+name: CI - Testes, Qualidade e SonarQube
 
 on:
   push:
     branches:
       - main
       - "task/**"
+      - "feat/**"
   pull_request:
     branches:
       - main
@@ -36,13 +37,16 @@ jobs:
     steps:
       - name: Baixar código
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
-          extensions: mysqli, xdebug
+          php-version: "8.4"
+          extensions: mysqli, pdo_mysql, mbstring, dom, xml, xmlwriter
           coverage: xdebug
+          tools: composer:v2
 
       - name: Cache das dependências do Composer
         uses: actions/cache@v4
@@ -57,7 +61,7 @@ jobs:
 
       - name: Verificar sintaxe PHP
         run: |
-          find php tests -type f -name "*.php" -print0 |
+          find php tests tests-e2e -type f -name "*.php" -print0 |
             xargs -0 -n1 php -l
 
       - name: Executar análise estática
@@ -77,7 +81,7 @@ jobs:
           DB_PASSWORD: pnld_local
           DB_NAME: SistemaHBL
         run: |
-          vendor/bin/phpunit \
+          vendor/bin/phpunit --configuration phpunit.xml \
             --coverage-text \
             --coverage-clover coverage.xml
 
@@ -88,3 +92,9 @@ jobs:
           name: coverage-report
           path: coverage.xml
           if-no-files-found: ignore
+
+      - name: Enviar análise para o SonarQube
+        uses: SonarSource/sonarqube-scan-action@v8.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

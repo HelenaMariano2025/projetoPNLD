@@ -1,201 +1,207 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<?php
 
-<head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
 
-  <title>Emprestimos + Devoluções</title> 
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  
+require_once __DIR__ . '/php/auth.php';
+exigirAutenticacao();
 
-  <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-  <!-- Fonts style -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+require_once __DIR__ . '/php/conexao.php';
 
-  <!-- Owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+$titulo = isset($_GET['titulo']) && is_string($_GET['titulo'])
+    ? trim($_GET['titulo'])
+    : '';
 
-  <!-- Font Awesome style -->
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <!-- Nice select -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
-    integrity="sha256-mLBIhmBvigTFWPSCtvdu6a76T+3Xyt+K571hupeFLg4=" crossorigin="anonymous" />
-  <!-- Datepicker -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css">
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- Responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
+$emprestimos = [];
+$erroConsulta = false;
 
-</head>
+try {
+    $sql = "
+        SELECT
+            emprestimo.codigo_emprestimo,
+            emprestimo.dataEmprestimo,
+            emprestimo.dataDevolucao,
+            livro.titulo,
+            livro.isbn,
+            aluno.nome
+        FROM emprestimo
+        INNER JOIN livro
+            ON emprestimo.codigo_livro = livro.codigo
+        INNER JOIN aluno
+            ON emprestimo.matricula_aluno = aluno.matricula
+        LEFT JOIN devolucao
+            ON emprestimo.codigo_emprestimo = devolucao.codigo_emprestimo
+        WHERE devolucao.codigo_emprestimo IS NULL
+    ";
 
-<body class="sub_page">
+    if ($titulo !== '') {
+        $sql .= " AND livro.titulo LIKE ?";
+        $stmt = $conn->prepare($sql);
+        $tituloPesquisa = '%' . $titulo . '%';
+        $stmt->bind_param('s', $tituloPesquisa);
+    } else {
+        $stmt = $conn->prepare($sql);
+    }
 
-  <div class="hero_area">
-    <!-- header section starts -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container">
-          <div class="contact_nav">
-            <a href="">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                Contato : +01 123455678990
-              </span>
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $emprestimos = $resultado->fetch_all(MYSQLI_ASSOC);
+
+    $resultado->free();
+    $stmt->close();
+} catch (mysqli_sql_exception $erro) {
+    $erroConsulta = true;
+}
+
+$paginaAtiva = 'emprestimos';
+$tituloPagina = 'Empréstimos e Devoluções — Sistema HBL Control';
+
+require_once __DIR__ . '/includes/cabecalho.php';
+?>
+
+<main class="container my-4">
+
+    <section class="painel">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>Empréstimos e devoluções</h1>
+                <p class="text-muted mb-0">
+                    Consulte os empréstimos em aberto e registre a devolução dos livros.
+                </p>
+            </div>
+
+            <a href="addEmprestimo.php" class="btn btn-primary mt-2">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Adicionar empréstimo
             </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email : ifpb@gmail.com
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span>
-                <a href="https://www.bing.com/maps?osid=2d9cc22c-c352-4b15-84e1-a645eaf97d8a&cp=-7.025562~-37.280592&lvl=17&pi=0&v=2&sV=2&form=S00027">Localização</a>
-              </span>
-            </a>
-          </div>
         </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand">
-              <img src="images/White and navy simple book store logo.png" alt="">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
+    </section>
+
+    <section class="painel">
+        <h2>Empréstimos em aberto</h2>
+        <p class="text-muted">
+            Consulte os livros que ainda não foram devolvidos.
+        </p>
+
+        <form action="emprestimosDevolucoes.php" method="get" class="mb-4">
+            <div class="form-group">
+                <label for="titulo">Pesquisar por título do livro</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="titulo"
+                    name="titulo"
+                    value="<?= htmlspecialchars($titulo, ENT_QUOTES, 'UTF-8') ?>"
+                    placeholder="Digite o título do livro"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-search" aria-hidden="true"></i>
+                Buscar
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <div class="d-flex mr-auto flex-column flex-lg-row align-items-center">
-                <ul class="navbar-nav  ">
-                  <li class="nav-item ">
-                    <a class="nav-link" href="funcoes.php">HOME <span class="sr-only">(current)</span></a>
-                  </li>
+            <a href="emprestimosDevolucoes.php" class="btn btn-secondary">
+                Limpar pesquisa
+            </a>
+        </form>
 
-                  <li class="nav-item">
-                    <a class="nav-link" href="addEmprestimo.php">Adicionar Emprestimo</a>
-                  </li>
+        <?php if ($erroConsulta): ?>
 
-                </ul>
-              </div>
+            <div class="alert alert-danger" role="alert">
+                Não foi possível consultar os empréstimos. Tente novamente.
             </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-    <!-- end header section -->
-  </div>
 
-  <!-- Emprestimos section -->
-  <section class="client_section layout_padding">
-    <div class="container">
-      <div class="heading_container">
-        <h2>
-          <span>Emprestimos</span>
-        </h2>
-      </div>
-    </div>
-    <div class="container px-0">
-      <div id="customCarousel2" class="carousel  carousel-fade" data-ride="carousel">
-        <div class="carousel-inner">
-          <div class="search_container">
-            <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
-              <input type="text" name="titulo" placeholder="Buscar por título do livro">
-              <button type="submit">Buscar</button>
-            </form>
-          </div>
-          <?php
-          // Incluir o arquivo de conexão
-          include 'php/conexao.php';
+        <?php elseif ($emprestimos === []): ?>
 
-          if (isset($_GET['titulo']) && !empty($_GET['titulo'])) {
-            $titulo = $_GET['titulo'];
+            <div class="alert alert-info mb-0" role="alert">
+                <?= $titulo !== ''
+                    ? 'Nenhum empréstimo encontrado para o título pesquisado.'
+                    : 'Nenhum livro emprestado no momento.' ?>
+            </div>
 
-            // Consulta SQL para buscar os Emprestimos com o título informado
-            $sql = "SELECT emprestimo.*, livro.*, aluno.* FROM emprestimo, livro, aluno, devolucao WHERE emprestimo.codigo_livro=livro.codigo AND emprestimo.matricula_aluno=aluno.matricula AND emprestimo.codigo_emprestimo!=devolucao.codigo_emprestimo AND livro.titulo LIKE '%$titulo%'";
-          } else {
-            // Se nenhum termo de pesquisa foi enviado, listar todos os Emprestimos disponíveis
-            $sql = "SELECT emprestimo.*, livro.*, aluno.* FROM emprestimo, livro, aluno, devolucao WHERE emprestimo.codigo_livro=livro.codigo AND emprestimo.matricula_aluno=aluno.matricula AND emprestimo.codigo_emprestimo!=devolucao.codigo_emprestimo";
-          }
+        <?php else: ?>
 
-          $result = $conn->query($sql);
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Aluno</th>
+                            <th scope="col">Livro</th>
+                            <th scope="col">ISBN</th>
+                            <th scope="col">Data do empréstimo</th>
+                            <th scope="col">Data prevista para devolução</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
 
-          if ($result->num_rows > 0) {
-            $count = 0;
-            // Exibe cada livro disponível
-            while ($row = $result->fetch_assoc()) {
-              // Define a classe 'active' para o primeiro item do carousel
-              $active_class = ($count == 0) ? 'active' : '';
-              echo "<div class='carousel-item $active_class'>";
-              echo "<div class='box'>";
-              echo "<div class='client_info'>";
-              echo "<div class='client_name'>";
-              echo "<h5>" . $row["nome"] . "</h5>";
-              echo "<h6>" . $row["titulo"] . " -- " . $row["isbn"] . "</h6>";
-              echo "</div>";
-              echo "</div>";
-              echo "<p>" . $row["dataEmprestimo"] . " -- " . $row["dataDevolucao"] . "</p>";
-              echo "</div>";
-              echo "<a href='devolverLivro.php?id=" . $row["codigo_emprestimo"] . "'>Devolver</a>";
-              echo "</div>";
-              $count++;
-            }
-          } else {
-            // Se não houver Emprestimos disponíveis, exibe uma mensagem
-            echo "<div class='carousel-item active'>";
-            echo "<div class='box'>";
-            echo "<p>Nenhum livro emprestado no momento.</p>";
-            echo "</div>";
-            echo "</div>";
-          }
+                    <tbody>
+                        <?php foreach ($emprestimos as $emprestimo): ?>
+                            <tr>
+                                <td>
+                                    <?= htmlspecialchars(
+                                        $emprestimo['nome'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-          ?>
-        </div>
-        <div class="carousel_btn-box">
-          <a class="carousel-control-prev" href="#customCarousel2" role="button" data-slide="prev">
-            <i class="fa fa-angle-left" aria-hidden="true"></i>
-            <span class="sr-only">Previous</span>
-          </a>
-          <a class="carousel-control-next" href="#customCarousel2" role="button" data-slide="next">
-            <i class="fa fa-angle-right" aria-hidden="true"></i>
-            <span class="sr-only">Next</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+                                <td>
+                                    <?= htmlspecialchars(
+                                        $emprestimo['titulo'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
+                                <td>
+                                    <?= htmlspecialchars(
+                                        $emprestimo['isbn'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-  <!-- footer section -->
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) $emprestimo['dataEmprestimo'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-  <script src="js/jquery-3.4.1.min.js"></script>
+                                <td>
+                                    <?= htmlspecialchars(
+                                        (string) $emprestimo['dataDevolucao'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>
+                                </td>
 
-  <script src="js/bootstrap.js"></script>
+                                <td>
+                                    <a
+                                        href="devolverLivro.php?id=<?= (int) $emprestimo['codigo_emprestimo'] ?>"
+                                        class="btn btn-primary btn-sm"
+                                    >
+                                        <i class="fa fa-undo" aria-hidden="true"></i>
+                                        Devolver
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js" integrity="sha256-Zr3vByTlMGQhvMfgkQ5BtWRSKBGa2QlspKYJnkjZTmo=" crossorigin="anonymous"></script>
+            <p class="text-muted mb-0">
+                Total de empréstimos em aberto: <?= count($emprestimos) ?>
+            </p>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+        <?php endif; ?>
+    </section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+</main>
 
-  <script src="js/custom.js"></script>
-  </p>
-
-</body>
-
-</html>
+<?php require_once __DIR__ . '/includes/rodape.php'; ?>

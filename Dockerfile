@@ -1,8 +1,15 @@
-FROM php:8.3-cli AS extensions
+FROM php:8.4-cli AS extensions
 
-RUN docker-php-ext-install mysqli
+RUN apt-get update \
+    && apt-get install -y libzip-dev libcurl4-openssl-dev libonig-dev \
+    && docker-php-ext-install mysqli pdo_mysql mbstring zip curl \
+    && rm -rf /var/lib/apt/lists/*
 
-FROM php:8.3-cli
+FROM php:8.4-cli
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libzip5 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/

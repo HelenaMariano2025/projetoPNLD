@@ -6,6 +6,7 @@ services:
     volumes:
       - .:/app
     environment:
+      PHP_CLI_SERVER_WORKERS: "4"
       DB_HOST: db
       DB_USER: pnld
       DB_PASSWORD: pnld_local
@@ -38,5 +39,12 @@ services:
       retries: 30
       start_period: 30s
 
+  selenium:
+    image: selenium/standalone-chrome:latest
+    shm_size: "2gb"
+    network_mode: "service:app"
+    depends_on:
+      - app
+
 volumes:
-  dados_mysql:
+  dados_mysql: {}

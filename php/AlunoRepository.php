@@ -9,9 +9,9 @@ class AlunoRepository
         $this->conn = $conn;
     }
 
-    public function inserir($matricula, $nome, $datnasc, $endereco, $sexo, $email, $situacao, $codigoTurma)
+    public function inserir($dados)
     {
-        $sql = "INSERT INTO aluno 
+        $sql = "INSERT INTO aluno
                 (matricula, nome, datnasc, endereco, sexo, email, situacao, codigoTurma)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -19,14 +19,14 @@ class AlunoRepository
 
         $stmt->bind_param(
             "issssssi",
-            $matricula,
-            $nome,
-            $datnasc,
-            $endereco,
-            $sexo,
-            $email,
-            $situacao,
-            $codigoTurma
+            $dados['matricula'],
+            $dados['nome'],
+            $dados['datnasc'],
+            $dados['endereco'],
+            $dados['sexo'],
+            $dados['email'],
+            $dados['situacao'],
+            $dados['codigoTurma']
         );
 
         return $stmt->execute();
@@ -36,12 +36,21 @@ class AlunoRepository
     {
         $sql = "SELECT * FROM aluno WHERE situacao = 'ativo'";
 
-        $result = $this->conn->query($sql);
-
-        return $result;
+        return $this->conn->query($sql);
     }
 
-    public function atualizar($matricula, $nome, $datnasc, $endereco, $sexo, $email, $situacao, $codigoTurma)
+    public function consultarPorMatricula($matricula)
+    {
+        $sql = "SELECT * FROM aluno WHERE matricula = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $matricula);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_assoc();
+    }
+
+    public function atualizar($dados)
     {
         $sql = "UPDATE aluno SET
                 nome = ?,
@@ -57,14 +66,14 @@ class AlunoRepository
 
         $stmt->bind_param(
             "ssssssii",
-            $nome,
-            $datnasc,
-            $endereco,
-            $sexo,
-            $email,
-            $situacao,
-            $codigoTurma,
-            $matricula
+            $dados['nome'],
+            $dados['datnasc'],
+            $dados['endereco'],
+            $dados['sexo'],
+            $dados['email'],
+            $dados['situacao'],
+            $dados['codigoTurma'],
+            $dados['matricula']
         );
 
         return $stmt->execute();
@@ -77,9 +86,27 @@ class AlunoRepository
                 WHERE matricula = ?";
 
         $stmt = $this->conn->prepare($sql);
-
         $stmt->bind_param("i", $matricula);
 
         return $stmt->execute();
+    }
+
+    public function pesquisarPorNome($nome)
+    {
+        $sql = "SELECT * FROM aluno
+                WHERE situacao = 'ativo'
+                AND nome LIKE ? ESCAPE '!'
+                ORDER BY nome";
+
+        $termo = '%' . strtr(
+            $nome,
+            ['!' => '!!', '%' => '!%', '_' => '!_']
+        ) . '%';
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $termo);
+        $stmt->execute();
+
+        return $stmt->get_result();
     }
 }

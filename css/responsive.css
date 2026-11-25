@@ -4,8 +4,6 @@
   }
 }
 
-@media (max-width: 1120px) {}
-
 @media (max-width: 992px) {
   .hero_area {
     height: auto;
@@ -150,10 +148,6 @@
   }
 }
 
-@media (max-width: 480px) {}
-
-@media (max-width: 420px) {}
-
 @media (max-width: 376px) {
   .slider_section .detail_box h1 {
     font-size: 2.5rem;
@@ -165,3 +159,113 @@
     max-width: 1170px;
   }
 }
+
+/* ==========================================================================
+   REGRAS GERAIS DE RESPONSIVIDADE - BASE COMPARTILHADA (ETAPA 1)
+   ========================================================================== */
+
+@media (max-width: 992px) {
+  .table-responsive {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-admin,
+  .painel {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .table th,
+  .table td,
+  .table-admin th,
+  .table-admin td {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .search_container form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search_container input[type="text"],
+  .search_container button[type="submit"] {
+    width: 100%;
+  }
+
+  .botoes,
+  .card-admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  h1, .h1 {
+    font-size: 1.3rem;
+  }
+
+  h2, .h2 {
+    font-size: 1.15rem;
+  }
+
+  .alert {
+    padding: 10px 14px;
+    font-size: 0.8125rem;
+  }
+
+  .botoes .btn {
+    width: 100%;
+  }
+}
+
+/* Responsividade do Cabeçalho e Navegação (Etapa 2) */
+@media (max-width: 991px) {
+  .hbl-header-top .container-fluid {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .hbl-user-box {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .hbl-navbar .navbar-nav {
+    flex-direction: column;
+    width: 100%;
+    gap: 0;
+    padding: 8px 0;
+  }
+
+  .hbl-nav-link {
+    width: 100%;
+    padding: 10px 14px;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+
+  .hbl-nav-link.active {
+    border-bottom-color: transparent;
+    border-left-color: var(--color-primary);
+  }
+}
+
+@media (max-width: 576px) {
+  .hbl-brand-title {
+    font-size: 1rem;
+  }
+
+  .hbl-brand-sub {
+    font-size: 0.75rem;
+  }
+
+  .hbl-brand-logo {
+    height: 36px;
+  }
+}
+

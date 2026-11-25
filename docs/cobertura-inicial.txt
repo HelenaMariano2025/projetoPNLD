@@ -1,0 +1,32 @@
+
+
+Code Coverage Report:
+  2026-11-02 19:37:44
+
+ Summary:
+  Classes: 72.73% (8/11)
+  Methods: 92.31% (48/52)
+  Lines:   97.47% (963/988)
+
+AdministradorRepository
+  Methods: 100.00% ( 2/ 2)   Lines: 100.00% ( 10/ 10)
+AlunoRepository
+  Methods: 100.00% ( 7/ 7)   Lines: 100.00% ( 53/ 53)
+AlunoValidador
+  Methods: 100.00% ( 8/ 8)   Lines: 100.00% ( 27/ 27)
+App\EmprestimoRepository
+  Methods: 100.00% ( 7/ 7)   Lines: 100.00% (107/107)
+App\TurmaRepository
+  Methods: 100.00% ( 8/ 8)   Lines: 100.00% ( 60/ 60)
+CadastroAdministrador
+  Methods: 100.00% ( 3/ 3)   Lines: 100.00% ( 13/ 13)
+CadastroAdministradorRepository
+  Methods:  50.00% ( 1/ 2)   Lines:  87.50% (  7/  8)
+EncerramentoException
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
+LivroRepository
+  Methods:  85.71% ( 6/ 7)   Lines:  98.57% ( 69/ 70)
+LivroValidator
+  Methods:  66.67% ( 4/ 6)   Lines:  95.00% ( 38/ 40)
+RedirecionamentoException
+  Methods: 100.00% ( 1/ 1)   Lines: 100.00% (  1/  1)
