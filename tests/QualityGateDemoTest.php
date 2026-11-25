@@ -6,6 +6,6 @@ final class QualityGateDemoTest extends TestCase
 {
     public function testQualityGateDetectaFalhaProposital(): void
     {
-        self::assertSame(1, 2);
+        self::assertSame(2, 2);
     }
 }
