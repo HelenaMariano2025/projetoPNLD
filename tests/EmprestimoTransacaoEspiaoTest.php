@@ -13,6 +13,7 @@ class StatementEspia extends mysqli_stmt
         parent::__construct($espia, $query);
     }
 
+    #[\ReturnTypeWillChange]
     public function close(): bool
     {
         $this->espia->closes++;

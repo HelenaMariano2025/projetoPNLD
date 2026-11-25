@@ -169,7 +169,7 @@ abstract class EmprestimoE2ETestCase extends E2ETestCase
 
     protected function tearDown(): void
     {
-        if (isset($this->conn) && $this->conn instanceof mysqli) {
+        if (isset($this->conn)) {
             if (!empty($this->codigoLivro)) {
                 $stmt = $this->conn->prepare(
                     'DELETE d FROM devolucao d
