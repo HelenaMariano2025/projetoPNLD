@@ -1,13 +1,16 @@
+FROM php:8.3-cli AS extensions
+
+RUN docker-php-ext-install mysqli
+
 FROM php:8.3-cli
 
-RUN docker-php-ext-install mysqli \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug
+COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 
 WORKDIR /app
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 8080
 
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "/app"]
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080} -t /app /app/router.php"]
