@@ -2,11 +2,14 @@
 
 use App\EmprestimoRepository;
 
-session_start();
+require_once __DIR__ . '/php/http.php';
+iniciarSessao();
+
+require_once __DIR__ . '/php/auth.php';
 exigirAutenticacao();
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once 'php/conexao.php';
+require_once __DIR__ . '/php/conexao.php';
 
 $id = (int) ($_GET['id'] ?? 0);
 $data = date('Y-m-d');
@@ -28,5 +31,4 @@ if ($id > 0) {
 
 $conn->close();
 
-header('Location: emprestimosDevolucoes.php');
-exit;
+redirecionar('emprestimosDevolucoes.php');
