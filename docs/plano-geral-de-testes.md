@@ -27,7 +27,7 @@ Ver [Documento de Visão](001-documento-visao.md), nas seções de propósito, p
 
 ### 2.1 Itens no escopo
 
-Serão realizados testes de unidade, integração e sistema para as oito histórias. Cada iteração executará os testes das histórias previstas em seu planejamento, além da regressão necessária.
+Serão realizados testes de unidade, integração e sistema para as nove histórias. Cada iteração executará os testes das histórias previstas em seu planejamento, além da regressão necessária.
 
 | História | Foco dos testes | Critérios e referências |
 |---|---|---|
@@ -39,6 +39,7 @@ Serão realizados testes de unidade, integração e sistema para as oito histór
 | US06 — Registrar empréstimos | Registro, vínculos, prazo de devolução, campos obrigatórios, disponibilidade, redução da quantidade, associação ao administrador e consistência entre empréstimo e estoque | TA06.01 a TA06.12 da análise utilizada no PTI |
 | US07 — Registrar devoluções | Registro, atualização do empréstimo e disponibilidade, ausência de empréstimo e devolução repetida | TA07.01 a TA07.06 |
 | US08 — Consultar histórico de empréstimos | Consulta com empréstimos e devoluções, dados relacionados e histórico vazio | TA08.01 a TA08.05 |
+| US09 — Encerrar sessão de administrador | Encerramento da sessão no servidor, limpeza da sessão, expiração dos cookies, redirecionamento para login.php e bloqueio de acesso posterior | TA09.01 a TA09.05 |
 
 Para a US02, este plano utiliza os identificadores TA02.01 a TA02.06 da tabela de critérios da análise atualizada. Nessa tabela, TA02.05 corresponde ao acesso após autenticação e TA02.06 ao bloqueio de acesso sem autenticação.
 
@@ -50,16 +51,15 @@ Na US05, o bloqueio da exclusão de livros com vínculos está previsto em T05.0
 
 Também serão verificadas a persistência dos dados e a restrição de acesso prevista no RNF4. Outros RNFs serão incluídos após consulta e validação do Documento de Visão.
 
-Para as Iterações 1 e 2, a distribuição informada pela equipe é:
+Para as Iterações 1, 2 e 3, a distribuição informada pela equipe é:
 
 - Iteração 1: US01, US02 e US03.
 - Iteração 2: US04, US05 e US06.
-
-US07 e US08 permanecem no escopo geral do sistema, mas não integram o planejamento de aceitação das Iterações 1 e 2 deste PTI.
+- Iteração 3: US07, US08 e US09.
 
 ### 2.2 Itens fora do escopo desta versão
 
-- Funcionalidades não previstas nas US01 a US08, incluindo novos relatórios ou exportação em PDF.
+- Funcionalidades não previstas nas US01 a US09, incluindo novos relatórios ou exportação em PDF.
 - Testes de carga, estresse e metas de desempenho, enquanto não houver requisitos e métricas aprovados.
 - Auditoria especializada de segurança e testes de penetração.
 - Certificação de acessibilidade e compatibilidade ampla entre navegadores, enquanto não houver critérios definidos.
@@ -196,6 +196,7 @@ Para US02, US04 e US05, foram consideradas as responsabilidades da identificaç�
 | US06 | Jaine | Helena | Isabelle | Jaine |
 | US07 | Isabelle | Jaine | Helena | Isabelle |
 | US08 | Helena | Isabelle | Jaine | Helena |
+| US09 | Jaine | Helena | Isabelle | Jaine |
 
 As tabelas de testes das análises da US02 e da US05 apresentam responsáveis diferentes daqueles definidos na identificação e no fluxo de responsabilidades. Neste plano, Helena é a responsável pela aceitação de ambas as histórias. A equipe deverá alinhar essas informações nos documentos de análise.
 
