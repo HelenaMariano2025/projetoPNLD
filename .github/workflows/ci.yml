@@ -30,7 +30,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u pnld -ppnld_local"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=30
@@ -71,10 +71,12 @@ jobs:
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress
 
       - name: Preparar banco de testes
+        env:
+          MYSQL_PWD: pnld_local
         run: |
           sudo apt-get update
           sudo apt-get install -y mysql-client
-          mysql -h 127.0.0.1 -u pnld -ppnld_local SistemaHBL < sql/bancoPNLD.sql
+          mysql -h 127.0.0.1 -u pnld SistemaHBL < sql/bancoPNLD.sql
 
       - name: Executar testes e gerar cobertura
         env:
